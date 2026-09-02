@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HedgePilot</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fb;
+      color: #172033;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .header h1 {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      color: #667085;
+      font-size: 17px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 16px;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      font-size: 16px;
+      resize: vertical;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: #667085;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 14px;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #quoteBtn {
+      background: #111827;
+      color: white;
+    }
+
+    #executeBtn {
+      background: #16a34a;
+      color: white;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .section-title {
+      margin-top: 0;
+      font-size: 22px;
+    }
+
+    .explanation {
+      background: #f8fafc;
+      padding: 18px;
+      border-radius: 10px;
+      line-height: 1.6;
+    }
+
+    .risk {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      background: #dcfce7;
+      color: #15803d;
+      margin-bottom: 15px;
+    }
+
+    .findings {
+      padding-left: 20px;
+      line-height: 1.6;
+    }
+
+    .trade-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .trade-item {
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 10px;
+    }
+
+    .trade-item span {
+      display: block;
+      color: #667085;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .trade-item strong {
+      font-size: 17px;
+    }
+
+    .success {
+      background: #ecfdf3;
+      border: 1px solid #abefc6;
+      padding: 18px;
+      border-radius: 10px;
+    }
+
+    .error {
+      background: #fef3f2;
+      color: #b42318;
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+    }
+
+    pre {
+      background: #111827;
+      color: #e5e7eb;
+      padding: 16px;
+      border-radius: 10px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+
+    @media (max-width: 600px) {
+      .trade-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <h1>🛡️ HedgePilot</h1>
+    <p>AI-powered downside protection for your crypto</p>
+  </div>
+
+  <div class="card">
+    <h2 class="section-title">Protect Your Position</h2>
+
+    <textarea
+      id="intent"
+      placeholder="Example: Protect my ETH from a 20% drop, I have 1.5 ETH"
+    ></textarea>
+
+    <button id="quoteBtn">Get Hedge Quote</button>
+
+    <div id="error" class="error hidden"></div>
+  </div>
+
+
+  <div id="quoteSection" class="card hidden">
+
+    <h2 class="section-title">Your Hedge Recommendation</h2>
+
+    <div class="explanation" id="explanation"></div>
+
+    <h3>Safety Check</h3>
+
+    <div id="risk" class="risk"></div>
+
+    <ul id="findings" class="findings"></ul>
+
+    <h3>Trade Details</h3>
+
+    <div class="trade-grid">
+
+      <div class="trade-item">
+        <span>Asset</span>
+        <strong id="asset"></strong>
+      </div>
+
+      <div class="trade-item">
+        <span>Position Size</span>
+        <strong id="size"></strong>
+      </div>
+
+      <div class="trade-item">
+        <span>Protection</span>
+        <strong id="drop"></strong>
+      </div>
+
+      <div class="trade-item">
+        <span>Duration</span>
+        <strong id="expiry"></strong>
+      </div>
+
+      <div class="trade-item">
+        <span>Strike Price</span>
+        <strong id="strike"></strong>
+      </div>
+
+      <div class="trade-item">
+        <span>Premium</span>
+        <strong id="premium"></strong>
+      </div>
+
+    </div>
+
+    <button id="executeBtn" disabled>
+      Confirm & Execute
+    </button>
+
+  </div>
+
+
+  <div id="successSection" class="card hidden">
+
+    <h2 class="section-title">✅ Hedge Executed</h2>
+
+    <div class="success">
+      <p><strong>Transaction Hash</strong></p>
+      <p id="txHash"></p>
+
+      <a id="basescanLink" target="_blank">
+        View transaction on BaseScan →
+      </a>
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let currentOrderId = null;
+let currentTrade = null;
+
+const intentInput = document.getElementById("intent");
+const quoteBtn = document.getElementById("quoteBtn");
+const executeBtn = document.getElementById("executeBtn");
+
+const quoteSection = document.getElementById("quoteSection");
+const successSection = document.getElementById("successSection");
+
+const errorBox = document.getElementById("error");
+
+
+function showError(message) {
+  errorBox.textContent = message;
+  errorBox.classList.remove("hidden");
+}
+
+
+function clearError() {
+  errorBox.textContent = "";
+  errorBox.classList.add("hidden");
+}
+
+
+quoteBtn.addEventListener("click", async () => {
+
+  clearError();
+
+  const text = intentInput.value.trim();
+
+  if (!text) {
+    showError("Please describe how you want to protect your position.");
+    return;
+  }
+
+  quoteBtn.disabled = true;
+  quoteBtn.textContent = "Analyzing...";
+
+  try {
+
+    // Step 1: Parse natural-language intent
+    const parseResponse = await fetch(
+      "http://localhost:3001/api/parse-intent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ text })
+      }
+    );
+
+    const intent = await parseResponse.json();
+
+    if (!parseResponse.ok) {
+      throw new Error(intent.error || "Failed to understand your request.");
+    }
+
+
+    // Step 2: Build hedge quote
+    const tradeResponse = await fetch(
+      "http://localhost:3001/api/build-trade",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          asset: intent.asset,
+          dropPercent: intent.dropPercent,
+          expiryDays: intent.expiryDays,
+          size: intent.size,
+          userIntentText: text
+        })
+      }
+    );
+
+    const trade = await tradeResponse.json();
+
+    if (!tradeResponse.ok) {
+      throw new Error(trade.error || "Failed to build hedge quote.");
+    }
+
+
+    currentTrade = trade;
+    currentOrderId = trade.orderId;
+
+
+    // Display explanation
+    document.getElementById("explanation").textContent =
+      trade.explanation;
+
+
+    // Display risk
+    const risk = trade.safety?.overallRisk || "UNKNOWN";
+
+    document.getElementById("risk").textContent =
+      risk.toUpperCase();
+
+
+    // Display findings
+    const findings = document.getElementById("findings");
+
+    findings.innerHTML = "";
+
+    (trade.safety?.findings || []).forEach(item => {
+
+      const li = document.createElement("li");
+
+      li.textContent =
+        `${item.check}: ${item.reason}`;
+
+      findings.appendChild(li);
+
+    });
+
+
+    // Display trade details
+    document.getElementById("asset").textContent =
+      trade.params.asset;
+
+    document.getElementById("size").textContent =
+      `${trade.params.size} ${trade.params.asset}`;
+
+    document.getElementById("drop").textContent =
+      `${intent.dropPercent}% downside`;
+
+    document.getElementById("expiry").textContent =
+      `${trade.params.expiryDays} days`;
+
+    document.getElementById("strike").textContent =
+      `$${Number(trade.params.strike).toFixed(2)}`;
+
+    document.getElementById("premium").textContent =
+      `$${trade.preview.totalCollateralUsd}`;
+
+
+    quoteSection.classList.remove("hidden");
+
+    executeBtn.disabled = false;
+
+    quoteSection.scrollIntoView({
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+
+    showError(error.message);
+
+  } finally {
+
+    quoteBtn.disabled = false;
+    quoteBtn.textContent = "Get Hedge Quote";
+
+  }
+
+});
+
+
+executeBtn.addEventListener("click", async () => {
+
+  if (!currentOrderId) {
+    showError("No hedge order available.");
+    return;
+  }
+
+  const confirmed = confirm(
+    "This will execute a real on-chain transaction. Continue?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  clearError();
+
+  executeBtn.disabled = true;
+  executeBtn.textContent = "Executing...";
+
+  try {
+
+    const response = await fetch(
+      "http://localhost:3001/api/execute-trade",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          orderId: currentOrderId
+        })
+      }
+    );
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || "Trade execution failed.");
+    }
+
+
+    document.getElementById("txHash").textContent =
+      result.txHash;
+
+    document.getElementById("basescanLink").href =
+      result.basescanUrl ||
+      `https://basescan.org/tx/${result.txHash}`;
+
+
+    successSection.classList.remove("hidden");
+
+    successSection.scrollIntoView({
+      behavior: "smooth"
+    });
+
+  } catch (error) {
+
+    showError(error.message);
+
+    executeBtn.disabled = false;
+    executeBtn.textContent = "Confirm & Execute";
+
+  }
+
+});
+
+</script>
+
+</body>
+</html>
