@@ -5,6 +5,13 @@ const gonka = new OpenAI({
     apiKey: process.env.GONKA_API_KEY,
 });
 
+// DeepSeek's reasoning models sometimes emit their internal chain-of-thought
+// wrapped in <think>...</think> before the real answer. Strip it out before
+// using any response as JSON or as user-facing text.
+function stripThinking(text) {
+    return text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
+
 const SYSTEM_PROMPT = `You extract hedging intent from a user's message.
 Respond with ONLY valid JSON, no other text, in this exact shape:
 
@@ -20,7 +27,7 @@ Rules:
 - expiryPreference: "short" if they mention days/urgency/soon, "medium" if ~2 weeks, "long" if ~a month or unspecified urgency.
 - size: the amount of the asset they mention (e.g. "1.5 ETH" -> 1.5). null if not stated.
 - If a field isn't mentioned, use null. Never guess a number that wasn't stated or implied.
-- Do not include any explanation, markdown, or text outside the JSON object.`;
+- Do not include any explanation, markdown, thinking, or text outside the JSON object.`;
 
 const EXPIRY_DAYS = { short: 7, medium: 14, long: 30 };
 
@@ -31,10 +38,10 @@ export async function parseIntent(userText) {
             { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: userText },
         ],
-        temperature: 0, // deterministic extraction, not creative writing
+        temperature: 0,
     });
 
-    const raw = res.choices[0].message.content.trim();
+    const raw = stripThinking(res.choices[0].message.content);
 
     let parsed;
     try {
@@ -43,8 +50,7 @@ export async function parseIntent(userText) {
         throw new Error(`Gonka did not return valid JSON: ${raw}`);
     }
 
-    // Apply defaults + validation — never trust the model's raw output blindly
-    const dropPercent = parsed.dropPercent ?? 20; // sensible default
+    const dropPercent = parsed.dropPercent ?? 20;
     const expiryPreference = parsed.expiryPreference ?? 'short';
     const expiryDays = EXPIRY_DAYS[expiryPreference] ?? EXPIRY_DAYS.short;
     const asset = parsed.asset ?? 'ETH';
@@ -61,8 +67,10 @@ export async function parseIntent(userText) {
     };
 }
 
-// Given a spot price, apply the deterministic Section 4 rule.
-// This is intentionally NOT done by the LLM — keep it inspectable code.
+// Deterministic — NOT done by the LLM, kept inspectable.
+// A strike BELOW spot is correct and expected here: protecting against an
+// X% drop means the insurance should only pay out once the price has
+// actually fallen that far, not at the current price.
 export function computeStrike(spotPrice, dropPercent) {
     return spotPrice * (1 - dropPercent / 100);
 }
@@ -70,7 +78,8 @@ export function computeStrike(spotPrice, dropPercent) {
 export async function explainTrade({ asset, size, strike, expiryDays, premium }) {
     const prompt = `Explain this hedge trade to a non-expert user in 2-3 plain sentences.
 Asset: ${asset}, Size: ${size}, Strike: $${strike.toFixed(2)}, Expiry: ${expiryDays} days, Premium cost: $${premium}.
-Mention what happens if the price stays above the strike (they lose only the premium, like insurance) and what happens if it drops below (they're protected).`;
+Mention what happens if the price stays above the strike (they lose only the premium, like insurance) and what happens if it drops below (they're protected).
+Respond with ONLY the explanation text — no reasoning, no <think> tags, no preamble.`;
 
     const res = await gonka.chat.completions.create({
         model: process.env.GONKA_MODEL,
@@ -78,5 +87,5 @@ Mention what happens if the price stays above the strike (they lose only the pre
         temperature: 0.3,
     });
 
-    return res.choices[0].message.content.trim();
+    return stripThinking(res.choices[0].message.content);
 }

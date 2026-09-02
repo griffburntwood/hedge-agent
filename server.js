@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import { ThetanutsClient } from '@thetanuts-finance/thetanuts-client';
 import { parseIntent, computeStrike, explainTrade } from './src/ai/parseIntent.js';
 import { checkTransactionSafety } from './src/ai/safetyCheck.js';
+import { findMatchingPutOrder, previewOrder, executeOrder, getSpotPrice } from './src/chain/thetanuts.js';
 
 const app = express();
 app.use(cors());
@@ -15,14 +16,11 @@ const client = new ThetanutsClient({ chainId: 8453, provider });
 
 // ---------------------------------------------------------------------------
 // POST /api/parse-intent
-// Body: { text: "protect my ETH from a 20% drop, I have 1.5 ETH" }
-// Returns: { asset, dropPercent, expiryDays, size }
 // ---------------------------------------------------------------------------
 app.post('/api/parse-intent', async (req, res) => {
     try {
         const { text } = req.body;
         if (!text) return res.status(400).json({ error: 'Missing "text" in request body.' });
-
         const intent = await parseIntent(text);
         res.json(intent);
     } catch (err) {
@@ -34,30 +32,12 @@ app.post('/api/parse-intent', async (req, res) => {
 // ---------------------------------------------------------------------------
 // POST /api/build-trade
 // Body: { asset, dropPercent, expiryDays, size, userIntentText }
-// Returns: { params, quote, unsignedTx, explanation, safety }
-//
-// *** TODO — the Thetanuts-specific part below is NOT filled in. ***
-// The SDK's exact method names for fetching a live quote and building an
-// unsigned transaction are intentionally not guessed here — the builder
-// doc explicitly says this part lives in the docs/repo, not the kickstart
-// sheet. To find the real method names:
-//
-//   1. Run: npx -y @thetanuts-finance/mcp
-//      Then ask your coding assistant to call get_sdk_context — it loads
-//      the whole SDK (types, workflows, gotchas) so you're not guessing.
-//   2. Or read: docs.thetanuts.finance/for-builders/sdk
-//   3. Or grab llms-full.txt from the repo root and feed it to your coding
-//      assistant before asking it to write this function.
-//
-// What you're looking for, conceptually:
-//   - A method to fetch live orders/quotes for a given asset (something
-//     built on top of client.api.fetchOrders(), which you already know works)
-//   - A method to build (not sign) a transaction that fills an existing
-//     OptionBook order matching your target strike/expiry/size
-//   - The result should be an UNSIGNED transaction object/hex you can send
-//     to a browser wallet (MetaMask) to sign — never sign it here on the
-//     server with a private key for the live demo.
+// Returns a PREVIEW ONLY — no funds move, no signing happens here.
+// The response includes an `orderId` the frontend must pass back to
+// /api/execute-trade once the user confirms.
 // ---------------------------------------------------------------------------
+const pendingOrders = new Map(); // demo-only in-memory store; fine for a hackathon
+
 app.post('/api/build-trade', async (req, res) => {
     try {
         const { asset, dropPercent, expiryDays, size, userIntentText } = req.body;
@@ -65,39 +45,37 @@ app.post('/api/build-trade', async (req, res) => {
             return res.status(400).json({ error: 'Missing required trade parameters.' });
         }
 
-        // --- Step 1: get real market data (this part IS proven to work) -------
-        const marketData = await client.api.getMarketData();
-        // TODO: pull the real spot price for `asset` out of marketData once you
-        // know its shape (console.log(marketData) to inspect it).
-        const spotPrice = marketData?.[asset]?.spotPrice ?? null;
-        if (spotPrice == null) {
-            return res.status(501).json({
-                error: `TODO: extract spot price for ${asset} from marketData. See server.js comments.`,
-                marketDataSample: marketData,
-            });
-        }
-
+        const spotPrice = await getSpotPrice(asset);
         const strike = computeStrike(spotPrice, dropPercent);
 
-        // --- Step 2: fetch a live quote for this strike/expiry/size -----------
-        // TODO: replace with the real SDK call once you've found it via MCP/docs.
-        // e.g. something like: const quote = await client.optionBook.getQuote({...})
-        return res.status(501).json({
-            error: 'TODO: implement live quote fetching + unsigned tx building. See comments in server.js.',
-            computedSoFar: { asset, strike, expiryDays, size, spotPrice },
+        const matchedOrder = await findMatchingPutOrder({ asset, targetStrike: strike, expiryDays });
+        const preview = await previewOrder(matchedOrder);
+
+        const params = { asset, strike, expiryDays, size, spotPrice };
+        const explanation = await explainTrade({
+            asset,
+            size,
+            strike,
+            expiryDays,
+            premium: preview.totalCollateralUsd, // correctly converted from 6-decimal USDC
         });
 
-        // --- Once real quote/tx building works, the rest of the flow is ready:
-        //
-        // const premium = quote.premium;
-        // const explanation = await explainTrade({ asset, size, strike, expiryDays, premium });
-        // const safety = await checkTransactionSafety(
-        //   userIntentText,
-        //   { asset, size, strike, expiryDays },
-        //   { to: unsignedTx.to, approvalAmount: approvalAmount, tradeSize: size }
-        // );
-        // res.json({ params: { asset, strike, expiryDays, size }, quote, unsignedTx, explanation, safety });
+        const safety = await checkTransactionSafety(
+            userIntentText || '',
+            params,
+            {
+                // The transaction actually calls the OptionBook contract, not the
+                // order's maker address — that's what needs to be allow-listed.
+                to: preview.optionBookAddress,
+                approvalAmount: preview.totalCollateral,
+                tradeSize: preview.fillAmountUsdc,
+            }
+        );
 
+        const orderId = `${matchedOrder.order.nonce}`;
+        pendingOrders.set(orderId, matchedOrder);
+
+        res.json({ orderId, params, preview, explanation, safety });
     } catch (err) {
         console.error('build-trade error:', err);
         res.status(500).json({ error: err.message });
@@ -105,10 +83,30 @@ app.post('/api/build-trade', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// POST /api/safety-check
-// Body: { userIntentText, builtParams, tx }
-// Returns: { overallRisk, findings }
-// (Exposed standalone too, in case the UI wants to re-check before signing)
+// POST /api/execute-trade
+// Body: { orderId }
+// This is the REAL, SIGNED transaction. Only call after explicit user
+// confirmation in the UI. Moves real (small) funds on Base mainnet.
+// ---------------------------------------------------------------------------
+app.post('/api/execute-trade', async (req, res) => {
+    try {
+        const { orderId } = req.body;
+        const order = pendingOrders.get(orderId);
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found or expired. Call /api/build-trade again.' });
+        }
+
+        const result = await executeOrder(order);
+        pendingOrders.delete(orderId);
+        res.json(result);
+    } catch (err) {
+        console.error('execute-trade error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/safety-check (standalone, kept for flexibility)
 // ---------------------------------------------------------------------------
 app.post('/api/safety-check', async (req, res) => {
     try {
@@ -125,7 +123,7 @@ app.post('/api/safety-check', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// GET /api/health — quick check that the server + Thetanuts connection work
+// GET /api/health
 // ---------------------------------------------------------------------------
 app.get('/api/health', async (req, res) => {
     try {
