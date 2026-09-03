@@ -6,6 +6,7 @@ import { ThetanutsClient } from '@thetanuts-finance/thetanuts-client';
 import { parseIntent, computeStrike, explainTrade } from './src/ai/parseIntent.js';
 import { checkTransactionSafety } from './src/ai/safetyCheck.js';
 import { findMatchingPutOrder, previewOrder, executeOrder, getSpotPrice } from './src/chain/thetanuts.js';
+import { scoreEvent, maybeTriggerHedge, THREAT_THRESHOLD, TEST_HEADLINES } from './src/ai/guardianCheck.js';
 
 const app = express();
 app.use(cors());
@@ -118,6 +119,49 @@ app.post('/api/safety-check', async (req, res) => {
         res.json(result);
     } catch (err) {
         console.error('safety-check error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// GET /api/guardian/headlines — the hardcoded demo headlines for the UI dropdown
+// ---------------------------------------------------------------------------
+app.get('/api/guardian/headlines', (req, res) => {
+    res.json({ headlines: TEST_HEADLINES, threshold: THREAT_THRESHOLD });
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/guardian/score
+// Body: { headline, asset, size, dropPercent, expiryDays, riskTolerance }
+// Scores only — no trade fires. Safe to call freely.
+// ---------------------------------------------------------------------------
+app.post('/api/guardian/score', async (req, res) => {
+    try {
+        const { headline, ...profile } = req.body;
+        if (!headline) return res.status(400).json({ error: 'Missing "headline".' });
+        const result = await scoreEvent(headline, profile);
+        res.json({ ...result, wouldTrigger: result.riskScore >= THREAT_THRESHOLD, threshold: THREAT_THRESHOLD });
+    } catch (err) {
+        console.error('guardian/score error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/guardian/trigger
+// Body: { headline, asset, size, dropPercent, expiryDays, riskTolerance }
+// REAL execution if the score crosses the threshold. Only call after
+// explicit user confirmation in the UI — same safety principle as
+// /api/execute-trade.
+// ---------------------------------------------------------------------------
+app.post('/api/guardian/trigger', async (req, res) => {
+    try {
+        const { headline, ...profile } = req.body;
+        if (!headline) return res.status(400).json({ error: 'Missing "headline".' });
+        const result = await maybeTriggerHedge(headline, profile);
+        res.json(result);
+    } catch (err) {
+        console.error('guardian/trigger error:', err);
         res.status(500).json({ error: err.message });
     }
 });
