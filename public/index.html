@@ -101,7 +101,7 @@
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .section-title {
@@ -194,6 +194,380 @@
       font-size: 13px;
     }
 
+    .setup-card {
+      padding: 32px;
+    }
+
+    .setup-header {
+      margin-bottom: 26px;
+    }
+
+    .setup-subtitle {
+      margin: 6px 0 0;
+      color: #667085;
+      font-size: 15px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #344054;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      height: 50px;
+      padding: 0 14px;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      background: white;
+      font-size: 16px;
+      color: #172033;
+      outline: none;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #111827;
+    }
+
+    .input-with-suffix {
+      position: relative;
+    }
+
+    .input-with-suffix input {
+      padding-right: 55px;
+    }
+
+    .input-with-suffix span {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #667085;
+      font-weight: 600;
+    }
+
+    .duration-options {
+      display: flex;
+      gap: 8px;
+    }
+
+    .duration-btn {
+      margin: 0;
+      padding: 0 14px;
+      height: 50px;
+      width: auto;
+      flex: 1;
+      background: #f8fafc;
+      color: #344054;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      font-size: 14px;
+    }
+
+    .duration-btn.active {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .ai-toggle {
+      margin-top: 20px;
+      padding: 14px 0;
+      color: #344054;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .ai-toggle span {
+      margin-left: 5px;
+    }
+
+    .ai-input-section {
+      margin-top: 4px;
+    }
+
+    .ai-input-section p {
+      color: #667085;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .ai-input-section textarea {
+      min-height: 90px;
+    }
+
+    .protection-visual {
+      background: #f8fafc;
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .price-box {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .price-box span {
+      color: #667085;
+      font-size: 14px;
+    }
+
+    .price-box strong {
+      font-size: 28px;
+      color: #172033;
+    }
+
+    .downside-arrow {
+      margin: 12px 0;
+      color: #667085;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .strike-box {
+      margin-top: 4px;
+    }
+
+    .safety-helper {
+      color: #667085;
+      font-size: 14px;
+      line-height: 1.5;
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+
+    .safety-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      list-style: none;
+      padding: 10px 0;
+      margin: 0;
+    }
+
+    .safety-icon {
+      color: #16a34a;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .safety-item strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .safety-item small {
+      display: block;
+      color: #667085;
+      margin-top: 3px;
+      line-height: 1.4;
+    }
+
+    .ai-recommendation {
+      background: #f8fafc;
+      border: 1px solid #e4e7ec;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .ai-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #172033;
+      margin-bottom: 12px;
+    }
+
+    .ai-recommendation .explanation {
+      background: transparent;
+      padding: 0;
+      margin: 0;
+    }
+
+    .progress-steps {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 22px;
+      padding: 0 10px;
+    }
+
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #98a2b3;
+      white-space: nowrap;
+    }
+
+    .step span {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid #d0d5dd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: bold;
+      background: white;
+    }
+
+    .step small {
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+
+    .step.active {
+      color: #172033;
+    }
+
+    .step.active span {
+      background: #111827;
+      color: white;
+      border-color: #111827;
+    }
+
+    .step-line {
+      width: 45px;
+      height: 1px;
+      background: #d0d5dd;
+      margin: 0 10px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .modal.hidden {
+      display: none;
+    }
+
+    .modal-content {
+      position: relative;
+      width: 100%;
+      max-width: 460px;
+      background: white;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+    }
+
+    .modal-content h2 {
+      margin: 0 0 6px;
+      font-size: 25px;
+    }
+
+    .modal-subtitle {
+      margin: 0 0 22px;
+      color: #667085;
+      font-size: 14px;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 16px;
+      width: auto;
+      margin: 0;
+      padding: 4px 8px;
+      background: transparent;
+      color: #667085;
+      font-size: 24px;
+    }
+
+    .modal-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .modal-details>div {
+      background: #f8fafc;
+      padding: 14px;
+      border-radius: 10px;
+    }
+
+    .modal-details span {
+      display: block;
+      color: #667085;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+
+    .modal-details strong {
+      font-size: 16px;
+    }
+
+    .modal-warning {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 20px;
+    }
+
+    .modal-warning strong {
+      font-size: 14px;
+    }
+
+    .modal-warning p {
+      margin: 7px 0 0;
+      color: #475467;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 10px;
+    }
+
+    .secondary-btn,
+    .primary-btn {
+      width: 100%;
+      margin-top: 0;
+    }
+
+    .secondary-btn {
+      background: #f2f4f7;
+      color: #344054;
+    }
+
+    .primary-btn {
+      background: #16a34a;
+      color: white;
+    }
+
     @media (max-width: 600px) {
       .trade-grid {
         grid-template-columns: 1fr;
@@ -201,6 +575,18 @@
 
       .header h1 {
         font-size: 32px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .duration-options {
+        flex-direction: column;
+      }
+
+      .duration-btn {
+        width: 100%;
       }
     }
   </style>
@@ -215,14 +601,72 @@
       <p>AI-powered downside protection for your crypto</p>
     </div>
 
-    <div class="card">
-      <h2 class="section-title">Protect Your Position</h2>
+    <div class="progress-steps">
+      <div class="step active"><span>1</span><small>Position</small></div>
+      <div class="step-line"></div>
+      <div class="step"><span>2</span><small>Quote</small></div>
+      <div class="step-line"></div>
+      <div class="step"><span>3</span><small>Safety</small></div>
+      <div class="step-line"></div>
+      <div class="step"><span>4</span><small>Confirm</small></div>
+    </div>
 
-      <textarea id="intent" placeholder="Example: Protect my ETH from a 20% drop, I have 1.5 ETH"></textarea>
+    <div class="card setup-card">
 
-      <button id="quoteBtn">Get Hedge Quote</button>
+      <div class="setup-header">
+        <h2 class="section-title">Protect Your ETH</h2>
+        <p class="setup-subtitle">Set your protection preferences and get an AI-powered hedge quote.</p>
+      </div>
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label for="amountInput">Amount to Protect</label>
+          <div class="input-with-suffix">
+            <input type="number" id="amountInput" value="1.5" min="0.01" step="0.01" />
+            <span>ETH</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="assetSelect">Asset</label>
+          <select id="assetSelect">
+            <option value="ETH">ETH</option>
+            <option value="BTC" disabled>BTC — Coming Soon</option>
+            <option value="SOL" disabled>SOL — Coming Soon</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="protectionInput">Downside Protection</label>
+          <div class="input-with-suffix">
+            <input type="number" id="protectionInput" value="20" min="1" max="90" step="1" />
+            <span>%</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Protection Duration</label>
+          <div class="duration-options">
+            <button type="button" class="duration-btn active" data-days="7">7 Days</button>
+            <button type="button" class="duration-btn" data-days="14">14 Days</button>
+            <button type="button" class="duration-btn" data-days="30">30 Days</button>
+          </div>
+        </div>
+
+      </div>
+
+      <button id="quoteBtn">Get Protection Quote →</button>
+
+      <div class="ai-toggle" id="aiToggle">✨ Describe with AI <span>▾</span></div>
+
+      <div id="aiInputSection" class="ai-input-section hidden">
+        <p>Tell HedgePilot what you want to protect in your own words.</p>
+        <textarea id="intent" placeholder="Example: Protect my ETH from a 20% drop for 7 days."></textarea>
+      </div>
 
       <div id="error" class="error hidden"></div>
+
     </div>
 
 
@@ -230,53 +674,44 @@
 
       <h2 class="section-title">Your Hedge Recommendation</h2>
 
-      <div class="explanation" id="explanation"></div>
+      <div class="ai-recommendation">
+        <div class="ai-title">🤖 AI Recommendation</div>
+        <div class="explanation" id="explanation"></div>
+      </div>
 
-      <h3>Safety Check</h3>
+      <h3>Transaction Safety</h3>
+      <p class="safety-helper">This check verifies that the transaction matches your request and uses approved contract
+        and approval settings.</p>
 
       <div id="risk" class="risk"></div>
-
       <ul id="findings" class="findings"></ul>
+
+      <h3>Your Protection</h3>
+
+      <div class="protection-visual">
+        <div class="price-box">
+          <span>Current ETH Price</span>
+          <strong id="spotPrice">—</strong>
+        </div>
+        <div class="downside-arrow">↓ <span id="visualDrop">20%</span> downside</div>
+        <div class="price-box strike-box">
+          <span>Protection Strike</span>
+          <strong id="visualStrike">—</strong>
+        </div>
+      </div>
 
       <h3>Trade Details</h3>
 
       <div class="trade-grid">
-
-        <div class="trade-item">
-          <span>Asset</span>
-          <strong id="asset"></strong>
-        </div>
-
-        <div class="trade-item">
-          <span>Position Size</span>
-          <strong id="size"></strong>
-        </div>
-
-        <div class="trade-item">
-          <span>Protection</span>
-          <strong id="drop"></strong>
-        </div>
-
-        <div class="trade-item">
-          <span>Duration</span>
-          <strong id="expiry"></strong>
-        </div>
-
-        <div class="trade-item">
-          <span>You're protected below</span>
-          <strong id="strike"></strong>
-        </div>
-
-        <div class="trade-item">
-          <span>Cost of protection</span>
-          <strong id="premium"></strong>
-        </div>
-
+        <div class="trade-item"><span>Asset</span><strong id="asset"></strong></div>
+        <div class="trade-item"><span>Position Size</span><strong id="size"></strong></div>
+        <div class="trade-item"><span>Protection</span><strong id="drop"></strong></div>
+        <div class="trade-item"><span>Duration</span><strong id="expiry"></strong></div>
+        <div class="trade-item"><span>You're protected below</span><strong id="strike"></strong></div>
+        <div class="trade-item"><span>Cost of protection</span><strong id="premium"></strong></div>
       </div>
 
-      <button id="executeBtn" disabled>
-        Confirm & Execute
-      </button>
+      <button id="executeBtn" disabled>Confirm & Execute</button>
 
     </div>
 
@@ -287,7 +722,7 @@
       <p class="subtitle">Let the AI watch for threats and auto-hedge on your behalf.</p>
 
       <div id="guardianTarget" class="guardian-target">
-        Protecting: 1.5 ETH · 20% drop · 7 days (default — get a quote above to personalize)
+        Protecting: 1.5 ETH · 20% drop · 7 days (based on your settings above)
       </div>
 
       <label for="headlineSelect" style="display:block; margin-bottom:8px; font-weight:bold;">
@@ -303,35 +738,48 @@
       <div id="guardianError" class="error hidden"></div>
 
       <div id="guardianResult" class="hidden" style="margin-top:20px;">
-
         <div id="guardianRisk" class="risk"></div>
-
         <div class="explanation" id="guardianReasoning"></div>
-
-        <button id="guardianExecuteBtn" class="hidden">
-          Confirm & Execute Auto-Hedge
-        </button>
-
+        <button id="guardianExecuteBtn" class="hidden">Confirm & Execute Auto-Hedge</button>
       </div>
 
     </div>
 
 
     <div id="successSection" class="card hidden">
-
       <h2 class="section-title">✅ Hedge Executed</h2>
-
       <div class="success">
         <p><strong>Transaction Hash</strong></p>
         <p id="txHash"></p>
-
-        <a id="basescanLink" target="_blank">
-          View transaction on BaseScan →
-        </a>
+        <a id="basescanLink" target="_blank">View transaction on BaseScan →</a>
       </div>
-
     </div>
 
+  </div>
+
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-content">
+      <button id="closeModal" class="modal-close">×</button>
+      <h2>Confirm Your Hedge</h2>
+      <p class="modal-subtitle">Review your protection before executing.</p>
+
+      <div class="modal-details">
+        <div><span>Protected Position</span><strong id="modalSize">—</strong></div>
+        <div><span>Protection</span><strong id="modalProtection">—</strong></div>
+        <div><span>Duration</span><strong id="modalDuration">—</strong></div>
+        <div><span>Premium</span><strong id="modalPremium">—</strong></div>
+      </div>
+
+      <div class="modal-warning">
+        <strong>🟢 LOW TRANSACTION RISK</strong>
+        <p>You're about to execute a real transaction on Base. Please review the details before confirming.</p>
+      </div>
+
+      <div class="modal-actions">
+        <button id="cancelModal" class="secondary-btn">Cancel</button>
+        <button id="confirmModalBtn" class="primary-btn">Confirm Hedge →</button>
+      </div>
+    </div>
   </div>
 
 
@@ -339,251 +787,187 @@
 
     let currentOrderId = null;
     let currentTrade = null;
-    let currentIntent = null; // real parsed intent from manual mode, reused by Guardian mode
 
     const intentInput = document.getElementById("intent");
     const quoteBtn = document.getElementById("quoteBtn");
     const executeBtn = document.getElementById("executeBtn");
-
     const quoteSection = document.getElementById("quoteSection");
     const successSection = document.getElementById("successSection");
-
     const errorBox = document.getElementById("error");
 
+    const amountInput = document.getElementById("amountInput");
+    const assetSelect = document.getElementById("assetSelect");
+    const protectionInput = document.getElementById("protectionInput");
+    const durationButtons = document.querySelectorAll(".duration-btn");
+
+    const aiToggle = document.getElementById("aiToggle");
+    const aiInputSection = document.getElementById("aiInputSection");
+
+    let selectedDuration = 7;
+
+    durationButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        durationButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        selectedDuration = Number(button.dataset.days);
+        updateGuardianTarget();
+      });
+    });
+
+    aiToggle.addEventListener("click", () => {
+      aiInputSection.classList.toggle("hidden");
+    });
 
     function showError(message) {
       errorBox.textContent = message;
       errorBox.classList.remove("hidden");
     }
-
-
     function clearError() {
       errorBox.textContent = "";
       errorBox.classList.add("hidden");
     }
-
-
-    // Reflects whatever Guardian mode will actually protect right now —
-    // either the real parsed intent from manual mode, or the fallback defaults.
-    function updateGuardianTarget() {
-      const target = document.getElementById("guardianTarget");
-      if (currentIntent) {
-        target.textContent =
-          `Protecting: ${currentIntent.size} ${currentIntent.asset} · ${currentIntent.dropPercent}% drop · ${currentIntent.expiryDays} days`;
-      } else {
-        target.textContent =
-          "Protecting: 1.5 ETH · 20% drop · 7 days (default — get a quote above to personalize)";
-      }
+    function setProgress(activeStep) {
+      document.querySelectorAll(".progress-steps .step").forEach((step, index) => {
+        step.classList.toggle("active", index + 1 === activeStep);
+      });
     }
 
 
     quoteBtn.addEventListener("click", async () => {
-
       clearError();
 
-      const text = intentInput.value.trim();
+      const amount = Number(amountInput.value);
+      const asset = assetSelect.value;
+      const dropPercent = Number(protectionInput.value);
+      const expiryDays = selectedDuration;
 
-      if (!text) {
-        showError("Please describe how you want to protect your position.");
+      if (!amount || amount <= 0) {
+        showError("Please enter a valid amount to protect.");
+        return;
+      }
+      if (!dropPercent || dropPercent <= 0 || dropPercent >= 100) {
+        showError("Please enter a protection percentage between 1% and 99%.");
         return;
       }
 
       quoteBtn.disabled = true;
-      quoteBtn.textContent = "Analyzing...";
+      quoteBtn.textContent = "Building Quote...";
 
       try {
+        const userIntentText = `Protect my ${asset} from a ${dropPercent}% drop, I have ${amount} ${asset} for ${expiryDays} days.`;
+        setProgress(2);
 
-        // Step 1: Parse natural-language intent
-        const parseResponse = await fetch(
-          "http://localhost:3001/api/parse-intent",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ text })
-          }
-        );
-
-        const intent = await parseResponse.json();
-
-        if (!parseResponse.ok) {
-          throw new Error(intent.error || "Failed to understand your request.");
-        }
-
-
-        // Step 2: Build hedge quote
-        const tradeResponse = await fetch(
-          "http://localhost:3001/api/build-trade",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              asset: intent.asset,
-              dropPercent: intent.dropPercent,
-              expiryDays: intent.expiryDays,
-              size: intent.size,
-              userIntentText: text
-            })
-          }
-        );
+        const tradeResponse = await fetch("http://localhost:3001/api/build-trade", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ asset, dropPercent, expiryDays, size: amount, userIntentText })
+        });
 
         const trade = await tradeResponse.json();
-
-        if (!tradeResponse.ok) {
-          throw new Error(trade.error || "Failed to build hedge quote.");
-        }
-
+        if (!tradeResponse.ok) throw new Error(trade.error || "Failed to build hedge quote.");
 
         currentTrade = trade;
         currentOrderId = trade.orderId;
-        currentIntent = intent; // Guardian mode now reuses this instead of hardcoded values
+        setProgress(3);
 
-        updateGuardianTarget();
+        document.getElementById("explanation").textContent = trade.explanation;
 
-
-        // Display explanation
-        document.getElementById("explanation").textContent =
-          trade.explanation;
-
-
-        // Display risk
         const risk = trade.safety?.overallRisk || "UNKNOWN";
+        document.getElementById("risk").textContent = risk.toUpperCase();
 
-        document.getElementById("risk").textContent =
-          risk.toUpperCase();
-
-
-        // Display findings
         const findings = document.getElementById("findings");
-
         findings.innerHTML = "";
-
         (trade.safety?.findings || []).forEach(item => {
-
           const li = document.createElement("li");
-
-          li.textContent =
-            `${item.check}: ${item.reason}`;
-
+          li.className = "safety-item";
+          let label = item.check;
+          if (item.check === "contract_address") label = "Contract verified";
+          else if (item.check === "approval_scope") label = "Approval scoped to trade";
+          else if (item.check === "parameter_match") label = "Parameters match your request";
+          li.innerHTML = `<span class="safety-icon">✓</span><div><strong>${label}</strong><small>${item.reason}</small></div>`;
           findings.appendChild(li);
-
         });
 
+        document.getElementById("asset").textContent = trade.params.asset;
+        document.getElementById("size").textContent = `${trade.params.size} ${trade.params.asset}`;
+        document.getElementById("drop").textContent = `${trade.params.dropPercent || dropPercent}% downside`;
+        document.getElementById("expiry").textContent = `${trade.params.expiryDays} days`;
+        document.getElementById("strike").textContent = `$${Number(trade.params.strike).toFixed(2)}`;
 
-        // Display trade details
-        document.getElementById("asset").textContent =
-          trade.params.asset;
+        const strikePrice = Number(trade.params.strike);
+        const calculatedSpotPrice = strikePrice / (1 - dropPercent / 100);
+        document.getElementById("spotPrice").textContent = `$${calculatedSpotPrice.toFixed(2)}`;
+        document.getElementById("visualStrike").textContent = `$${strikePrice.toFixed(2)}`;
+        document.getElementById("visualDrop").textContent = `${dropPercent}%`;
 
-        document.getElementById("size").textContent =
-          `${trade.params.size} ${trade.params.asset}`;
-
-        document.getElementById("drop").textContent =
-          `${intent.dropPercent}% downside`;
-
-        document.getElementById("expiry").textContent =
-          `${trade.params.expiryDays} days`;
-
-        document.getElementById("strike").textContent =
-          `$${Number(trade.params.strike).toFixed(2)}`;
-
-        document.getElementById("premium").textContent =
-          `$${trade.preview.totalCollateralUsd}`;
-
+        document.getElementById("premium").textContent = `$${trade.preview?.totalCollateralUsd || "—"}`;
 
         quoteSection.classList.remove("hidden");
-
         executeBtn.disabled = false;
-
-        quoteSection.scrollIntoView({
-          behavior: "smooth"
-        });
+        updateGuardianTarget();
+        quoteSection.scrollIntoView({ behavior: "smooth" });
 
       } catch (error) {
-
         showError(error.message);
-
       } finally {
-
         quoteBtn.disabled = false;
-        quoteBtn.textContent = "Get Hedge Quote";
-
+        quoteBtn.textContent = "Get Protection Quote →";
       }
-
     });
 
 
-    executeBtn.addEventListener("click", async () => {
+    const confirmModal = document.getElementById("confirmModal");
+    const closeModal = document.getElementById("closeModal");
+    const cancelModal = document.getElementById("cancelModal");
+    const confirmModalBtn = document.getElementById("confirmModalBtn");
 
+    executeBtn.addEventListener("click", () => {
       if (!currentOrderId) {
         showError("No hedge order available.");
         return;
       }
+      document.getElementById("modalSize").textContent = `${amountInput.value} ETH`;
+      document.getElementById("modalProtection").textContent = `${protectionInput.value}% downside`;
+      document.getElementById("modalDuration").textContent = `${document.querySelector(".duration-btn.active")?.dataset.days || "7"} Days`;
+      document.getElementById("modalPremium").textContent = document.getElementById("premium").textContent;
+      setProgress(4);
+      confirmModal.classList.remove("hidden");
+    });
 
-      const confirmed = confirm(
-        "This will execute a real on-chain transaction. Continue?"
-      );
+    function hideConfirmModal() { confirmModal.classList.add("hidden"); }
+    closeModal.addEventListener("click", hideConfirmModal);
+    cancelModal.addEventListener("click", hideConfirmModal);
 
-      if (!confirmed) {
-        return;
-      }
-
+    confirmModalBtn.addEventListener("click", async () => {
       clearError();
-
-      executeBtn.disabled = true;
-      executeBtn.textContent = "Executing...";
+      confirmModalBtn.disabled = true;
+      confirmModalBtn.textContent = "Executing...";
 
       try {
-
-        const response = await fetch(
-          "http://localhost:3001/api/execute-trade",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-              orderId: currentOrderId
-            })
-          }
-        );
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          throw new Error(result.error || "Trade execution failed.");
-        }
-
-
-        document.getElementById("txHash").textContent =
-          result.txHash;
-
-        document.getElementById("basescanLink").href =
-          result.basescanUrl ||
-          `https://basescan.org/tx/${result.txHash}`;
-
-
-        successSection.classList.remove("hidden");
-
-        successSection.scrollIntoView({
-          behavior: "smooth"
+        const response = await fetch("http://localhost:3001/api/execute-trade", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: currentOrderId })
         });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Trade execution failed.");
+
+        hideConfirmModal();
+        document.getElementById("txHash").textContent = result.txHash;
+        document.getElementById("basescanLink").href = result.basescanUrl || `https://basescan.org/tx/${result.txHash}`;
+        successSection.classList.remove("hidden");
+        successSection.scrollIntoView({ behavior: "smooth" });
 
       } catch (error) {
-
+        hideConfirmModal();
         showError(error.message);
-
-        executeBtn.disabled = false;
-        executeBtn.textContent = "Confirm & Execute";
-
+        confirmModalBtn.disabled = false;
+        confirmModalBtn.textContent = "Confirm Hedge →";
       }
-
     });
 
 
-    // --- Guardian Mode ---------------------------------------------------------
+    // --- Guardian Mode -----------------------------------------------------
 
     const headlineSelect = document.getElementById("headlineSelect");
     const guardianCheckBtn = document.getElementById("guardianCheckBtn");
@@ -599,26 +983,34 @@
       guardianError.textContent = message;
       guardianError.classList.remove("hidden");
     }
-
     function clearGuardianError() {
       guardianError.textContent = "";
       guardianError.classList.add("hidden");
     }
 
-    // Builds the profile Guardian mode actually uses — real parsed intent if
-    // available, otherwise sensible defaults. Never hardcoded once a quote
-    // has been fetched above.
+    // Guardian mode reads live from the form fields at the top of the page,
+    // instead of waiting for a parsed free-text intent.
     function getGuardianProfile() {
       return {
-        asset: currentIntent?.asset ?? "ETH",
-        size: currentIntent?.size ?? 1.5,
-        dropPercent: currentIntent?.dropPercent ?? 20,
-        expiryDays: currentIntent?.expiryDays ?? 7,
+        asset: assetSelect.value || "ETH",
+        size: Number(amountInput.value) || 1.5,
+        dropPercent: Number(protectionInput.value) || 20,
+        expiryDays: selectedDuration,
         riskTolerance: "medium"
       };
     }
 
-    // Load the hardcoded demo headlines into the dropdown on page load
+    function updateGuardianTarget() {
+      const target = document.getElementById("guardianTarget");
+      const profile = getGuardianProfile();
+      target.textContent = `Protecting: ${profile.size} ${profile.asset} · ${profile.dropPercent}% drop · ${profile.expiryDays} days`;
+    }
+
+    amountInput.addEventListener("input", updateGuardianTarget);
+    protectionInput.addEventListener("input", updateGuardianTarget);
+    assetSelect.addEventListener("change", updateGuardianTarget);
+    updateGuardianTarget();
+
     fetch("http://localhost:3001/api/guardian/headlines")
       .then(res => res.json())
       .then(data => {
@@ -644,7 +1036,6 @@
         showGuardianError("Please select an event to check.");
         return;
       }
-
       currentHeadline = headline;
 
       guardianCheckBtn.disabled = true;
@@ -656,7 +1047,6 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ headline, ...getGuardianProfile() })
         });
-
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Failed to score event.");
 
@@ -665,7 +1055,6 @@
           : "✅ Low Risk — No action needed";
         guardianRisk.style.background = result.wouldTrigger ? "#fee4e2" : "#dcfce7";
         guardianRisk.style.color = result.wouldTrigger ? "#b42318" : "#15803d";
-
         guardianReasoning.textContent = result.reasoning;
 
         guardianResult.classList.remove("hidden");
@@ -695,7 +1084,6 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ headline: currentHeadline, ...getGuardianProfile() })
         });
-
         const result = await response.json();
         if (!response.ok || result.error) throw new Error(result.error || "Guardian trigger failed.");
 
