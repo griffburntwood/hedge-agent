@@ -62,6 +62,16 @@
       border-color: #667085;
     }
 
+    select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #d0d5dd;
+      border-radius: 10px;
+      font-size: 16px;
+      margin-bottom: 14px;
+      background: white;
+    }
+
     button {
       width: 100%;
       padding: 14px;
@@ -73,12 +83,14 @@
       cursor: pointer;
     }
 
-    #quoteBtn {
+    #quoteBtn,
+    #guardianCheckBtn {
       background: #111827;
       color: white;
     }
 
-    #executeBtn {
+    #executeBtn,
+    #guardianExecuteBtn {
       background: #16a34a;
       color: white;
     }
@@ -95,6 +107,12 @@
     .section-title {
       margin-top: 0;
       font-size: 22px;
+    }
+
+    .subtitle {
+      color: #667085;
+      margin-top: -8px;
+      margin-bottom: 18px;
     }
 
     .explanation {
@@ -155,6 +173,16 @@
       padding: 15px;
       border-radius: 10px;
       margin-top: 15px;
+    }
+
+    .guardian-target {
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      margin-bottom: 16px;
+      display: inline-block;
     }
 
     pre {
@@ -235,12 +263,12 @@
         </div>
 
         <div class="trade-item">
-          <span>Strike Price</span>
+          <span>You're protected below</span>
           <strong id="strike"></strong>
         </div>
 
         <div class="trade-item">
-          <span>Premium</span>
+          <span>Cost of protection</span>
           <strong id="premium"></strong>
         </div>
 
@@ -249,6 +277,42 @@
       <button id="executeBtn" disabled>
         Confirm & Execute
       </button>
+
+    </div>
+
+
+    <div class="card">
+
+      <h2 class="section-title">🛡️ Guardian Mode</h2>
+      <p class="subtitle">Let the AI watch for threats and auto-hedge on your behalf.</p>
+
+      <div id="guardianTarget" class="guardian-target">
+        Protecting: 1.5 ETH · 20% drop · 7 days (default — get a quote above to personalize)
+      </div>
+
+      <label for="headlineSelect" style="display:block; margin-bottom:8px; font-weight:bold;">
+        Simulate a market event
+      </label>
+
+      <select id="headlineSelect">
+        <option value="">Loading headlines...</option>
+      </select>
+
+      <button id="guardianCheckBtn">Check Threat Level</button>
+
+      <div id="guardianError" class="error hidden"></div>
+
+      <div id="guardianResult" class="hidden" style="margin-top:20px;">
+
+        <div id="guardianRisk" class="risk"></div>
+
+        <div class="explanation" id="guardianReasoning"></div>
+
+        <button id="guardianExecuteBtn" class="hidden">
+          Confirm & Execute Auto-Hedge
+        </button>
+
+      </div>
 
     </div>
 
@@ -268,38 +332,6 @@
 
     </div>
 
-    <div class="card">
-
-      <h2 class="section-title">🛡️ Guardian Mode</h2>
-      <p style="color:#667085; margin-top:-8px;">Let the AI watch for threats and auto-hedge on your behalf.</p>
-
-      <label for="headlineSelect" style="display:block; margin-bottom:8px; font-weight:bold;">
-        Simulate a market event
-      </label>
-
-      <select id="headlineSelect"
-        style="width:100%; padding:14px; border:1px solid #d0d5dd; border-radius:10px; font-size:16px; margin-bottom:14px;">
-        <option value="">Loading headlines...</option>
-      </select>
-
-      <button id="guardianCheckBtn">Check Threat Level</button>
-
-      <div id="guardianError" class="error hidden"></div>
-
-      <div id="guardianResult" class="hidden" style="margin-top:20px;">
-
-        <div id="guardianRisk" class="risk"></div>
-
-        <div class="explanation" id="guardianReasoning"></div>
-
-        <button id="guardianExecuteBtn" class="hidden" style="background:#16a34a; color:white; margin-top:14px;">
-          Confirm & Execute Auto-Hedge
-        </button>
-
-      </div>
-
-    </div>
-
   </div>
 
 
@@ -307,6 +339,7 @@
 
     let currentOrderId = null;
     let currentTrade = null;
+    let currentIntent = null; // real parsed intent from manual mode, reused by Guardian mode
 
     const intentInput = document.getElementById("intent");
     const quoteBtn = document.getElementById("quoteBtn");
@@ -327,6 +360,20 @@
     function clearError() {
       errorBox.textContent = "";
       errorBox.classList.add("hidden");
+    }
+
+
+    // Reflects whatever Guardian mode will actually protect right now —
+    // either the real parsed intent from manual mode, or the fallback defaults.
+    function updateGuardianTarget() {
+      const target = document.getElementById("guardianTarget");
+      if (currentIntent) {
+        target.textContent =
+          `Protecting: ${currentIntent.size} ${currentIntent.asset} · ${currentIntent.dropPercent}% drop · ${currentIntent.expiryDays} days`;
+      } else {
+        target.textContent =
+          "Protecting: 1.5 ETH · 20% drop · 7 days (default — get a quote above to personalize)";
+      }
     }
 
 
@@ -392,6 +439,9 @@
 
         currentTrade = trade;
         currentOrderId = trade.orderId;
+        currentIntent = intent; // Guardian mode now reuses this instead of hardcoded values
+
+        updateGuardianTarget();
 
 
         // Display explanation
@@ -544,7 +594,6 @@
     const guardianError = document.getElementById("guardianError");
 
     let currentHeadline = null;
-    let guardianWouldTrigger = false;
 
     function showGuardianError(message) {
       guardianError.textContent = message;
@@ -554,6 +603,19 @@
     function clearGuardianError() {
       guardianError.textContent = "";
       guardianError.classList.add("hidden");
+    }
+
+    // Builds the profile Guardian mode actually uses — real parsed intent if
+    // available, otherwise sensible defaults. Never hardcoded once a quote
+    // has been fetched above.
+    function getGuardianProfile() {
+      return {
+        asset: currentIntent?.asset ?? "ETH",
+        size: currentIntent?.size ?? 1.5,
+        dropPercent: currentIntent?.dropPercent ?? 20,
+        expiryDays: currentIntent?.expiryDays ?? 7,
+        riskTolerance: "medium"
+      };
     }
 
     // Load the hardcoded demo headlines into the dropdown on page load
@@ -592,22 +654,15 @@
         const response = await fetch("http://localhost:3001/api/guardian/score", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            headline,
-            asset: "ETH",
-            size: 1.5,
-            dropPercent: 20,
-            expiryDays: 7,
-            riskTolerance: "medium"
-          })
+          body: JSON.stringify({ headline, ...getGuardianProfile() })
         });
 
         const result = await response.json();
         if (!response.ok) throw new Error(result.error || "Failed to score event.");
 
-        guardianWouldTrigger = result.wouldTrigger;
-
-        guardianRisk.textContent = `Score: ${result.riskScore}/100 — ${result.wouldTrigger ? "WOULD AUTO-HEDGE" : "NO ACTION"}`;
+        guardianRisk.textContent = result.wouldTrigger
+          ? "⚠️ High Risk — We'd protect you automatically"
+          : "✅ Low Risk — No action needed";
         guardianRisk.style.background = result.wouldTrigger ? "#fee4e2" : "#dcfce7";
         guardianRisk.style.color = result.wouldTrigger ? "#b42318" : "#15803d";
 
@@ -638,14 +693,7 @@
         const response = await fetch("http://localhost:3001/api/guardian/trigger", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            headline: currentHeadline,
-            asset: "ETH",
-            size: 1.5,
-            dropPercent: 20,
-            expiryDays: 7,
-            riskTolerance: "medium"
-          })
+          body: JSON.stringify({ headline: currentHeadline, ...getGuardianProfile() })
         });
 
         const result = await response.json();
