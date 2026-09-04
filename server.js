@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import { ethers } from 'ethers';
 import { ThetanutsClient } from '@thetanuts-finance/thetanuts-client';
 import { parseIntent, computeStrike, explainTrade } from './src/ai/parseIntent.js';
@@ -9,8 +8,8 @@ import { findMatchingPutOrder, previewOrder, executeOrder, getSpotPrice } from '
 import { scoreEvent, maybeTriggerHedge, THREAT_THRESHOLD, TEST_HEADLINES } from './src/ai/guardianCheck.js';
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(express.static('public'));
 
 const provider = new ethers.JsonRpcProvider(process.env.THETANUTS_RPC_URL);
 const client = new ThetanutsClient({ chainId: 8453, provider });
@@ -42,22 +41,42 @@ const pendingOrders = new Map(); // demo-only in-memory store; fine for a hackat
 app.post('/api/build-trade', async (req, res) => {
     try {
         const { asset, dropPercent, expiryDays, size, userIntentText } = req.body;
-        if (!asset || dropPercent == null || !expiryDays || !size) {
-            return res.status(400).json({ error: 'Missing required trade parameters.' });
+        const numericDrop = Number(dropPercent);
+        const numericExpiry = Number(expiryDays);
+        const numericSize = Number(size);
+
+        if (asset !== 'ETH') {
+            return res.status(400).json({ error: 'Only ETH protection is supported in this demo.' });
+        }
+        if (!Number.isFinite(numericDrop) || numericDrop < 1 || numericDrop > 90) {
+            return res.status(400).json({ error: 'Downside protection must be between 1% and 90%.' });
+        }
+        if (![1, 2, 3].includes(numericExpiry)) {
+            return res.status(400).json({ error: 'Protection duration must be 1, 2, or 3 days.' });
+        }
+        if (!Number.isFinite(numericSize) || numericSize <= 0) {
+            return res.status(400).json({ error: 'Position size must be greater than zero.' });
         }
 
         const spotPrice = await getSpotPrice(asset);
-        const strike = computeStrike(spotPrice, dropPercent);
+        const strike = computeStrike(spotPrice, numericDrop);
 
-        const matchedOrder = await findMatchingPutOrder({ asset, targetStrike: strike, expiryDays });
+        const matchedOrder = await findMatchingPutOrder({ asset, targetStrike: strike, expiryDays: numericExpiry });
         const preview = await previewOrder(matchedOrder);
 
-        const params = { asset, strike, expiryDays, size, spotPrice };
+        const params = {
+            asset,
+            strike,
+            dropPercent: numericDrop,
+            expiryDays: numericExpiry,
+            size: numericSize,
+            spotPrice,
+        };
         const explanation = await explainTrade({
             asset,
-            size,
+            size: numericSize,
             strike,
-            expiryDays,
+            expiryDays: numericExpiry,
             premium: preview.totalCollateralUsd, // correctly converted from 6-decimal USDC
         });
 
@@ -97,8 +116,10 @@ app.post('/api/execute-trade', async (req, res) => {
             return res.status(404).json({ error: 'Order not found or expired. Call /api/build-trade again.' });
         }
 
-        const result = await executeOrder(order);
+        // Consume the preview before execution so duplicate/concurrent requests
+        // cannot submit the same approved order twice.
         pendingOrders.delete(orderId);
+        const result = await executeOrder(order);
         res.json(result);
     } catch (err) {
         console.error('execute-trade error:', err);
@@ -179,7 +200,8 @@ app.get('/api/health', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-    console.log(`Try: curl http://localhost:${PORT}/api/health`);
+const HOST = '127.0.0.1';
+app.listen(PORT, HOST, () => {
+    console.log(`HedgePilot running at http://${HOST}:${PORT}`);
+    console.log(`Health check: http://${HOST}:${PORT}/api/health`);
 });

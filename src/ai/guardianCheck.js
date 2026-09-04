@@ -91,7 +91,7 @@ const SERVER_BASE_URL = process.env.SERVER_BASE_URL || `http://localhost:${proce
  *
  * @param {string} headline
  * @param {object} userRiskProfile - e.g.
- *   { asset: 'ETH', size: 1.5, dropPercent: 20, expiryDays: 7, riskTolerance: 'medium' }
+ *   { asset: 'ETH', size: 1.5, dropPercent: 20, expiryDays: 1, riskTolerance: 'medium' }
  *   (asset/size/dropPercent/expiryDays are needed to call /api/build-trade —
  *   riskTolerance is only used by Gonka for scoring.)
  * @returns {Promise<{
@@ -118,7 +118,7 @@ export async function maybeTriggerHedge(headline, userRiskProfile) {
                 asset,
                 size,
                 dropPercent: dropPercent ?? 20,
-                expiryDays: expiryDays ?? 7,
+                expiryDays: expiryDays ?? 1,
                 userIntentText: `[Guardian Mode auto-trigger] Event: "${headline}" — score ${riskScore}/100. ${reasoning}`,
             }),
         });
@@ -159,7 +159,7 @@ export const TEST_HEADLINES = [
 // call maybeTriggerHedge for just ONE headline, with the server running,
 // and watch for the tx hash) — don't loop it over all test headlines.
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-    const testProfile = { asset: 'ETH', size: 1.5, dropPercent: 20, expiryDays: 7, riskTolerance: 'medium' };
+    const testProfile = { asset: 'ETH', size: 1.5, dropPercent: 20, expiryDays: 1, riskTolerance: 'medium' };
 
     for (const headline of TEST_HEADLINES) {
         const { riskScore, reasoning } = await scoreEvent(headline, testProfile);

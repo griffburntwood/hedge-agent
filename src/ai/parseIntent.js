@@ -24,12 +24,12 @@ Respond with ONLY valid JSON, no other text, in this exact shape:
 
 Rules:
 - dropPercent: the downside percentage they want protection against (e.g. "20% drop" -> 20).
-- expiryPreference: "short" if they mention days/urgency/soon, "medium" if ~2 weeks, "long" if ~a month or unspecified urgency.
+- expiryPreference: "short" for about 1 day/urgent, "medium" for about 2 days, and "long" for about 3 days or unspecified urgency.
 - size: the amount of the asset they mention (e.g. "1.5 ETH" -> 1.5). null if not stated.
 - If a field isn't mentioned, use null. Never guess a number that wasn't stated or implied.
 - Do not include any explanation, markdown, thinking, or text outside the JSON object.`;
 
-const EXPIRY_DAYS = { short: 7, medium: 14, long: 30 };
+const EXPIRY_DAYS = { short: 1, medium: 2, long: 3 };
 
 export async function parseIntent(userText) {
     const res = await gonka.chat.completions.create({
@@ -78,7 +78,8 @@ export function computeStrike(spotPrice, dropPercent) {
 export async function explainTrade({ asset, size, strike, expiryDays, premium }) {
     const prompt = `Explain this hedge trade to a non-expert user in 2-3 plain sentences.
 Asset: ${asset}, Size: ${size}, Strike: $${strike.toFixed(2)}, Expiry: ${expiryDays} days, Premium cost: $${premium}.
-Mention what happens if the price stays above the strike (they lose only the premium, like insurance) and what happens if it drops below (they're protected).
+Mention what happens if the price stays above the strike (they lose only the premium, like insurance) and that the option gains value if the price drops below the strike.
+Important: this hackathon transaction is a deliberately small proof-of-execution fill. Do not say it fully protects the stated position or pays back the user's entire loss; actual protection depends on the number of contracts purchased.
 Respond with ONLY the explanation text — no reasoning, no <think> tags, no preamble.`;
 
     const res = await gonka.chat.completions.create({

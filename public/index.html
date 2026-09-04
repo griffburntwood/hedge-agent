@@ -906,9 +906,9 @@
         <div class="form-group">
           <label>Protection Duration</label>
           <div class="duration-options">
-            <button type="button" class="duration-btn active" data-days="7">7 Days</button>
-            <button type="button" class="duration-btn" data-days="14">14 Days</button>
-            <button type="button" class="duration-btn" data-days="30">30 Days</button>
+            <button type="button" class="duration-btn active" data-days="1">1 Day</button>
+            <button type="button" class="duration-btn" data-days="2">2 Days</button>
+            <button type="button" class="duration-btn" data-days="3">3 Days</button>
           </div>
         </div>
 
@@ -920,7 +920,7 @@
 
       <div id="aiInputSection" class="ai-input-section hidden">
         <p>Tell HedgePilot what you want to protect in your own words.</p>
-        <textarea id="intent" placeholder="Example: Protect my ETH from a 20% drop for 7 days."></textarea>
+        <textarea id="intent" placeholder="Example: Protect my ETH from a 20% drop for 1 day."></textarea>
       </div>
 
       <div id="error" class="error hidden"></div>
@@ -979,10 +979,10 @@
     <div class="card">
 
       <h2 class="section-title">🛡️ Guardian Mode</h2>
-      <p class="subtitle">Let the AI watch for threats and auto-hedge on your behalf.</p>
+      <p class="subtitle">Let the AI assess threats and prepare a hedge for your confirmation.</p>
 
       <div id="guardianTarget" class="guardian-target">
-        Protecting: 1.5 ETH · 20% drop · 7 days (based on your settings above)
+        Protecting: 1.5 ETH · 20% drop · 1 day (based on your settings above)
       </div>
 
       <label for="headlineSelect" style="display:block; margin-bottom:8px; font-weight:bold; color:#cbd5e1;">
@@ -1063,7 +1063,7 @@
     const aiToggle = document.getElementById("aiToggle");
     const aiInputSection = document.getElementById("aiInputSection");
 
-    let selectedDuration = 7;
+    let selectedDuration = 1;
 
     durationButtons.forEach(button => {
       button.addEventListener("click", () => {
@@ -1117,7 +1117,7 @@
         const userIntentText = `Protect my ${asset} from a ${dropPercent}% drop, I have ${amount} ${asset} for ${expiryDays} days.`;
         setProgress(2);
 
-        const tradeResponse = await fetch("http://localhost:3001/api/build-trade", {
+        const tradeResponse = await fetch("/api/build-trade", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ asset, dropPercent, expiryDays, size: amount, userIntentText })
@@ -1151,7 +1151,13 @@
         document.getElementById("asset").textContent = trade.params.asset;
         document.getElementById("size").textContent = `${trade.params.size} ${trade.params.asset}`;
         document.getElementById("drop").textContent = `${trade.params.dropPercent || dropPercent}% downside`;
-        document.getElementById("expiry").textContent = `${trade.params.expiryDays} days`;
+        const durationLabel = `${trade.params.expiryDays} ${trade.params.expiryDays === 1 ? "day" : "days"}`;
+        const expiryLabel = trade.preview?.expiryIso
+          ? new Date(trade.preview.expiryIso).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })
+          : null;
+        document.getElementById("expiry").textContent = expiryLabel
+          ? `${durationLabel} · expires ${expiryLabel}`
+          : durationLabel;
         document.getElementById("strike").textContent = `$${Number(trade.params.strike).toFixed(2)}`;
 
         const strikePrice = Number(trade.params.strike);
@@ -1191,7 +1197,8 @@
       }
       document.getElementById("modalSize").textContent = `${amountInput.value} ETH`;
       document.getElementById("modalProtection").textContent = `${protectionInput.value}% downside`;
-      document.getElementById("modalDuration").textContent = `${document.querySelector(".duration-btn.active")?.dataset.days || "7"} Days`;
+      const modalDays = Number(document.querySelector(".duration-btn.active")?.dataset.days || 1);
+      document.getElementById("modalDuration").textContent = `${modalDays} ${modalDays === 1 ? "day" : "days"}`;
       document.getElementById("modalPremium").textContent = document.getElementById("premium").textContent;
       setProgress(4);
       confirmModal.classList.remove("hidden");
@@ -1207,7 +1214,7 @@
       confirmModalBtn.textContent = "Executing...";
 
       try {
-        const response = await fetch("http://localhost:3001/api/execute-trade", {
+        const response = await fetch("/api/execute-trade", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderId: currentOrderId })
@@ -1273,7 +1280,8 @@
     function updateGuardianTarget() {
       const target = document.getElementById("guardianTarget");
       const profile = getGuardianProfile();
-      target.textContent = `Protecting: ${profile.size} ${profile.asset} · ${profile.dropPercent}% drop · ${profile.expiryDays} days`;
+      const guardianDuration = `${profile.expiryDays} ${profile.expiryDays === 1 ? "day" : "days"}`;
+      target.textContent = `Protecting: ${profile.size} ${profile.asset} · ${profile.dropPercent}% drop · ${guardianDuration}`;
     }
 
     amountInput.addEventListener("input", updateGuardianTarget);
@@ -1281,7 +1289,7 @@
     assetSelect.addEventListener("change", updateGuardianTarget);
     updateGuardianTarget();
 
-    fetch("http://localhost:3001/api/guardian/headlines")
+    fetch("/api/guardian/headlines")
       .then(res => res.json())
       .then(data => {
         headlineSelect.innerHTML = "";
@@ -1312,7 +1320,7 @@
       guardianCheckBtn.textContent = "Analyzing...";
 
       try {
-        const response = await fetch("http://localhost:3001/api/guardian/score", {
+        const response = await fetch("/api/guardian/score", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ headline, ...getGuardianProfile() })
@@ -1321,7 +1329,7 @@
         if (!response.ok) throw new Error(result.error || "Failed to score event.");
 
         guardianRisk.textContent = result.wouldTrigger
-          ? "⚠️ High Risk — We'd protect you automatically"
+          ? "⚠️ High Risk — Hedge recommended"
           : "✅ Low Risk — No action needed";
         guardianRisk.style.background = result.wouldTrigger ? "rgba(248,113,113,0.15)" : "rgba(74,222,128,0.15)";
         guardianRisk.style.color = result.wouldTrigger ? "#fca5a5" : "#4ade80";
@@ -1350,7 +1358,7 @@
       guardianExecuteBtn.textContent = "Executing...";
 
       try {
-        const response = await fetch("http://localhost:3001/api/guardian/trigger", {
+        const response = await fetch("/api/guardian/trigger", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ headline: currentHeadline, ...getGuardianProfile() })

@@ -11,6 +11,12 @@ const UNDERLYING_TOKENS = {
     // until then rather than guessing.
 };
 
+// The short-dated ETH PUT inventory settles in native USDC on Base. Keeping
+// the demo path on this token avoids requiring a separate Aave deposit before
+// a new user can buy protection.
+const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+const EXPIRY_TOLERANCE_SEC = 12 * 60 * 60;
+
 // Deliberately small, fixed fill size — matches the builder doc's explicit
 // guidance ("trade small... a 1 USDC fill scores exactly the same as a 100
 // USDC fill"). We do NOT try to map the user's stated ETH size to a real
@@ -33,8 +39,9 @@ function signerClient() {
 }
 
 /**
- * Find a live PUT order on the OptionBook closest to the target strike,
- * with an expiry at or after the user's requested window.
+ * Find a live native-USDC PUT order closest to the requested duration and
+ * target strike. OptionBook expiries use fixed timestamps, so a nominal
+ * "3 day" expiry can be slightly under 72 hours away; allow a 12-hour drift.
  *
  * Confirmed real order shape (from a live fetchOrders() call):
  *   order.order.strikePrice   -> string, 8-decimal fixed point (e.g. "232000000000" = $2320)
@@ -52,27 +59,31 @@ export async function findMatchingPutOrder({ asset, targetStrike, expiryDays }) 
     const orders = await client.api.fetchOrders();
 
     const nowSec = Math.floor(Date.now() / 1000);
-    const minExpirySec = nowSec + expiryDays * 24 * 60 * 60;
+    const targetExpirySec = nowSec + expiryDays * 24 * 60 * 60;
 
     const candidates = orders.filter((o) => {
         const isPut = o.rawApiData?.isCall === false;
         const matchesAsset = o.order?.underlyingToken?.toLowerCase() === underlyingToken.toLowerCase();
         const expirySec = Number(o.order?.expiry ?? 0);
-        const expiryOk = expirySec >= minExpirySec;
+        const expiryOk = expirySec > nowSec && Math.abs(expirySec - targetExpirySec) <= EXPIRY_TOLERANCE_SEC;
+        const usesNativeUsdc = o.order?.collateralToken?.toLowerCase() === BASE_USDC.toLowerCase();
         const hasLiquidity = BigInt(o.availableAmount ?? '0') > 0n;
-        return isPut && matchesAsset && expiryOk && hasLiquidity;
+        return isPut && matchesAsset && expiryOk && usesNativeUsdc && hasLiquidity;
     });
 
     if (candidates.length === 0) {
         throw new Error(
-            `No live PUT orders found for ${asset} with expiry >= ${expiryDays} days out. Try a shorter expiry or check fetchOrders() manually.`
+            `No live native-USDC PUT orders found near the ${expiryDays}-day duration. Live inventory changes; try another duration.`
         );
     }
 
-    // Pick the order whose strike is closest to our computed target strike.
+    // Prefer the closest expiry first, then the closest strike within it.
     // strikePrice is 8-decimal fixed point — divide by 1e8 to get a USD number.
     const targetStrike8dp = targetStrike * 1e8;
     candidates.sort((a, b) => {
+        const expiryDiffA = Math.abs(Number(a.order.expiry) - targetExpirySec);
+        const expiryDiffB = Math.abs(Number(b.order.expiry) - targetExpirySec);
+        if (expiryDiffA !== expiryDiffB) return expiryDiffA - expiryDiffB;
         const diffA = Math.abs(Number(a.order.strikePrice) - targetStrike8dp);
         const diffB = Math.abs(Number(b.order.strikePrice) - targetStrike8dp);
         return diffA - diffB;
@@ -107,6 +118,8 @@ export async function previewOrder(order) {
         // Express' JSON serializer cannot encode bigint values, so normalize
         // this display-only metadata before returning the preview to the UI.
         collateralDecimals: Number(collateralDecimals),
+        expiryTimestamp: Number(order.order.expiry),
+        expiryIso: new Date(Number(order.order.expiry) * 1000).toISOString(),
         optionBookAddress: order.rawApiData?.optionBookAddress,
         fillAmountUsdc: DEMO_FILL_AMOUNT_USDC.toString(),
     };

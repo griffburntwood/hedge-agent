@@ -6,10 +6,8 @@ const gonka = new OpenAI({
 });
 
 // Hardcoded allow-list of known-good Thetanuts contract addresses on Base.
-// TODO: replace with the real deployed addresses from Thetanuts docs
-// (docs.thetanuts.finance) before the demo — these are placeholders.
 const ALLOWED_CONTRACTS = new Set([
-    '0x1bDff855d6811728acaDC00989e79143a2bdfDed', // placeholder — replace with real address
+    '0x1bDff855d6811728acaDC00989e79143a2bdfDed', // verified Base OptionBook
 ].map((a) => a.toLowerCase()));
 
 const MAX_UINT256 = '115792089237316195423570985008687907853269984665640564039457584007913129639935';

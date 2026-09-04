@@ -1,6 +1,6 @@
 # HedgePilot
 
-AI-powered downside protection for crypto — hedge your ETH with real, on-chain options, either on request or automatically when the AI detects a genuine threat.
+AI-powered downside protection for crypto — describe your risk, review a live ETH put, and execute a real on-chain option.
 
 Built for the MUBA Hackathon — Track 2 (AI × Options).
 
@@ -10,13 +10,15 @@ Built for the MUBA Hackathon — Track 2 (AI × Options).
 
 HedgePilot is an AI agent that turns plain-language hedging requests into real, executed options trades on Base. A user states how much of an asset they hold and how much downside protection they want; the AI parses that into precise trade parameters, finds a live matching option on Thetanuts' order book, explains the trade in plain English, runs a safety check, and — only once the user confirms — executes a real transaction on Base mainnet.
 
-A second mode, **Guardian Mode**, lets the same AI evaluate market events and decide whether they're a credible enough threat to the user's specific holdings to warrant hedging automatically — still requiring the user's final confirmation before anything executes.
+A second mode, **Guardian Mode**, lets the same AI evaluate market events and recommend a hedge when a threat is credible enough for the user's holdings. The current MVP still requires the user's final confirmation before anything executes.
 
 ## Problem Statement
 
 Options are the standard tool for hedging downside risk in traditional finance, but on-chain they remain largely inaccessible to everyday holders. Protecting a position without selling it requires understanding strikes, expiries, premiums, and order books — knowledge most crypto holders don't have and don't have time to learn. Existing on-chain protection tools either require that expertise directly, or don't exist for retail-sized positions at all.
 
 HedgePilot removes that barrier: the user describes their goal in plain language (or a simple form), and the AI handles the translation into an executable, correctly-priced trade — while a transparent safety check ensures nothing is signed blindly.
+
+The current demo focuses on 1-, 2-, and 3-day event protection using native USDC orders. Guardian Mode can monitor over a longer period and purchase short-dated protection only when a credible threat appears. Supporting longer 7-, 14-, and 30-day coverage is a planned extension; the live longer-dated inventory currently uses Aave Base USDC (`aBasUSDC`) collateral.
 
 ## Blockchain Technology Used
 
@@ -72,7 +74,7 @@ GONKA_MODEL=deepseek-ai/DeepSeek-V4-Flash-0731
 npx @thetanuts-finance/cli wallet create
 ```
 
-Fund it with 1-3 USDC + a small amount of ETH (for gas) on Base network before attempting to execute a trade.
+Fund it with 1-3 native USDC + a small amount of ETH (for gas) on Base network before attempting to execute a trade. The current 1-, 2-, and 3-day demo path does not require converting USDC to aBasUSDC.
 
 ### Verify the setup
 
@@ -93,7 +95,7 @@ Should print a real number of live orders.
 ```bash
 node server.js
 ```
-Open `public/index.html` in a browser (or visit `http://localhost:3001` if serving statically).
+Open `http://127.0.0.1:3001`. The server hosts the interface locally and accepts API requests only from the same local origin.
 
 ## Team Members
 
