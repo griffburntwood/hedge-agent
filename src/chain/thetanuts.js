@@ -103,7 +103,10 @@ export async function previewOrder(order) {
         totalCollateralFormatted: ethers.formatUnits(totalCollateralRaw, collateralDecimals),
         collateralToken: preview.collateralToken,
         collateralSymbol,
-        collateralDecimals,
+        // Some SDK/provider versions return ERC-20 decimals as a bigint.
+        // Express' JSON serializer cannot encode bigint values, so normalize
+        // this display-only metadata before returning the preview to the UI.
+        collateralDecimals: Number(collateralDecimals),
         optionBookAddress: order.rawApiData?.optionBookAddress,
         fillAmountUsdc: DEMO_FILL_AMOUNT_USDC.toString(),
     };
