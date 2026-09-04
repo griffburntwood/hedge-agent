@@ -5,6 +5,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HedgePilot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
 
   <style>
     * {
@@ -13,9 +18,14 @@
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fb;
-      color: #172033;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(34, 211, 238, 0.08), transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(168, 85, 247, 0.10), transparent 40%),
+        linear-gradient(180deg, #05060f 0%, #0a0e27 50%, #060815 100%);
+      background-attachment: fixed;
+      color: #e2e8f0;
+      min-height: 100vh;
     }
 
     .container {
@@ -32,44 +42,66 @@
     .header h1 {
       font-size: 42px;
       margin-bottom: 8px;
+      color: #f1f5f9;
+      font-weight: 800;
+      text-shadow: 0 0 20px rgba(34, 211, 238, 0.35);
+      letter-spacing: -0.5px;
     }
 
     .header p {
-      color: #667085;
+      color: #94a3b8;
       font-size: 17px;
     }
 
     .card {
-      background: white;
-      border-radius: 16px;
+      background: rgba(17, 24, 57, 0.55);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
       padding: 28px;
       margin-bottom: 22px;
-      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(34, 211, 238, 0.04) inset;
     }
 
     textarea {
       width: 100%;
       min-height: 120px;
       padding: 16px;
-      border: 1px solid #d0d5dd;
+      border: 1px solid rgba(148, 163, 184, 0.3);
       border-radius: 10px;
       font-size: 16px;
+      font-family: inherit;
       resize: vertical;
       outline: none;
+      background: rgba(5, 8, 20, 0.6);
+      color: #e2e8f0;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    textarea::placeholder {
+      color: #64748b;
     }
 
     textarea:focus {
-      border-color: #667085;
+      border-color: #22d3ee;
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
     }
 
     select {
       width: 100%;
       padding: 14px;
-      border: 1px solid #d0d5dd;
+      border: 1px solid rgba(148, 163, 184, 0.3);
       border-radius: 10px;
       font-size: 16px;
+      font-family: inherit;
       margin-bottom: 14px;
-      background: white;
+      background: rgba(5, 8, 20, 0.6);
+      color: #e2e8f0;
+    }
+
+    select option {
+      background: #0a0e27;
+      color: #e2e8f0;
     }
 
     button {
@@ -79,24 +111,40 @@
       border: none;
       border-radius: 10px;
       font-size: 16px;
-      font-weight: bold;
+      font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
+      transition: all 0.2s ease;
     }
 
     #quoteBtn,
     #guardianCheckBtn {
-      background: #111827;
-      color: white;
+      background: #22d3ee;
+      color: #05060f;
+    }
+
+    #quoteBtn:hover:not(:disabled),
+    #guardianCheckBtn:hover:not(:disabled) {
+      background: #67e8f9;
+      transform: translateY(-1px);
+      box-shadow: 0 0 24px rgba(34, 211, 238, 0.5);
     }
 
     #executeBtn,
     #guardianExecuteBtn {
-      background: #16a34a;
-      color: white;
+      background: #4ade80;
+      color: #05060f;
+    }
+
+    #executeBtn:hover:not(:disabled),
+    #guardianExecuteBtn:hover:not(:disabled) {
+      background: #86efac;
+      transform: translateY(-1px);
+      box-shadow: 0 0 24px rgba(74, 222, 128, 0.5);
     }
 
     button:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
@@ -107,28 +155,33 @@
     .section-title {
       margin-top: 0;
       font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
     }
 
     .subtitle {
-      color: #667085;
+      color: #94a3b8;
       margin-top: -8px;
       margin-bottom: 18px;
     }
 
     .explanation {
-      background: #f8fafc;
+      background: rgba(5, 8, 20, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
       padding: 18px;
       border-radius: 10px;
       line-height: 1.6;
+      color: #cbd5e1;
     }
 
     .risk {
       display: inline-block;
       padding: 8px 16px;
       border-radius: 20px;
-      font-weight: bold;
-      background: #dcfce7;
-      color: #15803d;
+      font-weight: 700;
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ade80;
+      border: 1px solid rgba(74, 222, 128, 0.35);
       margin-bottom: 15px;
     }
 
@@ -144,50 +197,60 @@
     }
 
     .trade-item {
-      background: #f8fafc;
+      background: rgba(5, 8, 20, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
       padding: 14px;
       border-radius: 10px;
     }
 
     .trade-item span {
       display: block;
-      color: #667085;
+      color: #94a3b8;
       font-size: 13px;
       margin-bottom: 5px;
     }
 
     .trade-item strong {
       font-size: 17px;
+      color: #f1f5f9;
     }
 
     .success {
-      background: #ecfdf3;
-      border: 1px solid #abefc6;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.35);
       padding: 18px;
       border-radius: 10px;
+      color: #cbd5e1;
+    }
+
+    .success a {
+      color: #4ade80;
     }
 
     .error {
-      background: #fef3f2;
-      color: #b42318;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      color: #fca5a5;
       padding: 15px;
       border-radius: 10px;
       margin-top: 15px;
     }
 
     .guardian-target {
-      background: #eff6ff;
-      color: #1d4ed8;
+      background: rgba(34, 211, 238, 0.1);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      color: #67e8f9;
       padding: 10px 14px;
       border-radius: 8px;
       font-size: 14px;
+      font-weight: 500;
       margin-bottom: 16px;
       display: inline-block;
     }
 
     pre {
-      background: #111827;
-      color: #e5e7eb;
+      background: #05060f;
+      color: #e2e8f0;
       padding: 16px;
       border-radius: 10px;
       overflow-x: auto;
@@ -204,7 +267,7 @@
 
     .setup-subtitle {
       margin: 6px 0 0;
-      color: #667085;
+      color: #94a3b8;
       font-size: 15px;
     }
 
@@ -223,7 +286,7 @@
     .form-group label {
       font-size: 14px;
       font-weight: 600;
-      color: #344054;
+      color: #cbd5e1;
     }
 
     .form-group input,
@@ -231,17 +294,20 @@
       width: 100%;
       height: 50px;
       padding: 0 14px;
-      border: 1px solid #d0d5dd;
+      border: 1px solid rgba(148, 163, 184, 0.3);
       border-radius: 10px;
-      background: white;
+      background: rgba(5, 8, 20, 0.6);
       font-size: 16px;
-      color: #172033;
+      font-family: inherit;
+      color: #e2e8f0;
       outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     .form-group input:focus,
     .form-group select:focus {
-      border-color: #111827;
+      border-color: #22d3ee;
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
     }
 
     .input-with-suffix {
@@ -257,7 +323,7 @@
       right: 15px;
       top: 50%;
       transform: translateY(-50%);
-      color: #667085;
+      color: #94a3b8;
       font-weight: 600;
     }
 
@@ -272,23 +338,25 @@
       height: 50px;
       width: auto;
       flex: 1;
-      background: #f8fafc;
-      color: #344054;
-      border: 1px solid #d0d5dd;
+      background: rgba(5, 8, 20, 0.5);
+      color: #cbd5e1;
+      border: 1px solid rgba(148, 163, 184, 0.3);
       border-radius: 10px;
       font-size: 14px;
+      transition: all 0.2s ease;
     }
 
     .duration-btn.active {
-      background: #111827;
-      color: white;
-      border-color: #111827;
+      background: #22d3ee;
+      color: #05060f;
+      border-color: #22d3ee;
+      box-shadow: 0 0 16px rgba(34, 211, 238, 0.4);
     }
 
     .ai-toggle {
       margin-top: 20px;
       padding: 14px 0;
-      color: #344054;
+      color: #22d3ee;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
@@ -303,7 +371,7 @@
     }
 
     .ai-input-section p {
-      color: #667085;
+      color: #94a3b8;
       font-size: 14px;
       margin-bottom: 10px;
     }
@@ -313,7 +381,8 @@
     }
 
     .protection-visual {
-      background: #f8fafc;
+      background: rgba(5, 8, 20, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.15);
       border-radius: 14px;
       padding: 22px;
       margin-bottom: 24px;
@@ -327,18 +396,18 @@
     }
 
     .price-box span {
-      color: #667085;
+      color: #94a3b8;
       font-size: 14px;
     }
 
     .price-box strong {
       font-size: 28px;
-      color: #172033;
+      color: #f1f5f9;
     }
 
     .downside-arrow {
       margin: 12px 0;
-      color: #667085;
+      color: #fbbf24;
       font-size: 15px;
       font-weight: 600;
     }
@@ -348,7 +417,7 @@
     }
 
     .safety-helper {
-      color: #667085;
+      color: #94a3b8;
       font-size: 14px;
       line-height: 1.5;
       margin-top: -8px;
@@ -365,7 +434,7 @@
     }
 
     .safety-icon {
-      color: #16a34a;
+      color: #4ade80;
       font-weight: bold;
       font-size: 18px;
     }
@@ -373,18 +442,19 @@
     .safety-item strong {
       display: block;
       font-size: 14px;
+      color: #e2e8f0;
     }
 
     .safety-item small {
       display: block;
-      color: #667085;
+      color: #94a3b8;
       margin-top: 3px;
       line-height: 1.4;
     }
 
     .ai-recommendation {
-      background: #f8fafc;
-      border: 1px solid #e4e7ec;
+      background: rgba(168, 85, 247, 0.06);
+      border: 1px solid rgba(168, 85, 247, 0.25);
       border-radius: 14px;
       padding: 20px;
       margin-bottom: 24px;
@@ -393,12 +463,13 @@
     .ai-title {
       font-size: 17px;
       font-weight: 700;
-      color: #172033;
+      color: #e9d5ff;
       margin-bottom: 12px;
     }
 
     .ai-recommendation .explanation {
       background: transparent;
+      border: none;
       padding: 0;
       margin: 0;
     }
@@ -415,7 +486,7 @@
       display: flex;
       align-items: center;
       gap: 7px;
-      color: #98a2b3;
+      color: #475569;
       white-space: nowrap;
     }
 
@@ -423,13 +494,14 @@
       width: 28px;
       height: 28px;
       border-radius: 50%;
-      border: 1px solid #d0d5dd;
+      border: 1px solid rgba(148, 163, 184, 0.3);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 13px;
       font-weight: bold;
-      background: white;
+      background: rgba(5, 8, 20, 0.6);
+      transition: all 0.2s ease;
     }
 
     .step small {
@@ -439,26 +511,27 @@
     }
 
     .step.active {
-      color: #172033;
+      color: #e2e8f0;
     }
 
     .step.active span {
-      background: #111827;
-      color: white;
-      border-color: #111827;
+      background: #22d3ee;
+      color: #05060f;
+      border-color: #22d3ee;
+      box-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
     }
 
     .step-line {
       width: 45px;
       height: 1px;
-      background: #d0d5dd;
+      background: rgba(148, 163, 184, 0.25);
       margin: 0 10px;
     }
 
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(15, 23, 42, 0.45);
+      background: rgba(2, 3, 10, 0.75);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -474,20 +547,23 @@
       position: relative;
       width: 100%;
       max-width: 460px;
-      background: white;
-      border-radius: 18px;
+      background: #0a0e27;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 20px;
       padding: 28px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(34, 211, 238, 0.08);
     }
 
     .modal-content h2 {
       margin: 0 0 6px;
       font-size: 25px;
+      font-weight: 700;
+      color: #f1f5f9;
     }
 
     .modal-subtitle {
       margin: 0 0 22px;
-      color: #667085;
+      color: #94a3b8;
       font-size: 14px;
     }
 
@@ -499,7 +575,7 @@
       margin: 0;
       padding: 4px 8px;
       background: transparent;
-      color: #667085;
+      color: #94a3b8;
       font-size: 24px;
     }
 
@@ -511,25 +587,27 @@
     }
 
     .modal-details>div {
-      background: #f8fafc;
+      background: rgba(5, 8, 20, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.15);
       padding: 14px;
       border-radius: 10px;
     }
 
     .modal-details span {
       display: block;
-      color: #667085;
+      color: #94a3b8;
       font-size: 12px;
       margin-bottom: 5px;
     }
 
     .modal-details strong {
       font-size: 16px;
+      color: #f1f5f9;
     }
 
     .modal-warning {
-      background: #f0fdf4;
-      border: 1px solid #bbf7d0;
+      background: rgba(74, 222, 128, 0.08);
+      border: 1px solid rgba(74, 222, 128, 0.3);
       border-radius: 10px;
       padding: 14px;
       margin-bottom: 20px;
@@ -537,11 +615,12 @@
 
     .modal-warning strong {
       font-size: 14px;
+      color: #86efac;
     }
 
     .modal-warning p {
       margin: 7px 0 0;
-      color: #475467;
+      color: #cbd5e1;
       font-size: 13px;
       line-height: 1.5;
     }
@@ -559,13 +638,176 @@
     }
 
     .secondary-btn {
-      background: #f2f4f7;
-      color: #344054;
+      background: rgba(148, 163, 184, 0.12);
+      color: #cbd5e1;
+    }
+
+    .secondary-btn:hover {
+      background: rgba(148, 163, 184, 0.2);
     }
 
     .primary-btn {
-      background: #16a34a;
-      color: white;
+      background: #4ade80;
+      color: #05060f;
+    }
+
+    .primary-btn:hover:not(:disabled) {
+      background: #86efac;
+    }
+
+    /* ===== HISTORY SIDEBAR ===== */
+
+    .history-toggle {
+      position: fixed;
+      top: 50%;
+      right: 0;
+      transform: translateY(-50%);
+      background: #0a0e27;
+      border: 1px solid rgba(34, 211, 238, 0.35);
+      border-right: none;
+      color: #67e8f9;
+      padding: 16px 10px;
+      border-radius: 12px 0 0 12px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: 1px;
+      z-index: 900;
+      box-shadow: -4px 0 20px rgba(34, 211, 238, 0.15);
+      width: auto;
+      margin: 0;
+      transition: box-shadow 0.2s ease;
+    }
+
+    .history-toggle:hover {
+      box-shadow: -4px 0 28px rgba(34, 211, 238, 0.3);
+    }
+
+    .history-panel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      height: 100vh;
+      width: 340px;
+      max-width: 88vw;
+      background: rgba(10, 14, 39, 0.97);
+      backdrop-filter: blur(16px);
+      border-left: 1px solid rgba(99, 102, 241, 0.3);
+      box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+      z-index: 950;
+      transform: translateX(100%);
+      transition: transform 0.28s ease;
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    .history-panel.open {
+      transform: translateX(0);
+    }
+
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .history-header h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #f1f5f9;
+    }
+
+    .history-close {
+      width: auto;
+      margin: 0;
+      padding: 4px 10px;
+      background: transparent;
+      color: #94a3b8;
+      font-size: 22px;
+    }
+
+    .history-empty {
+      color: #64748b;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 40px;
+    }
+
+    .history-item {
+      background: rgba(5, 8, 20, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .history-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .history-mode {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .history-mode.manual {
+      background: rgba(34, 211, 238, 0.15);
+      color: #67e8f9;
+    }
+
+    .history-mode.guardian {
+      background: rgba(168, 85, 247, 0.15);
+      color: #d8b4fe;
+    }
+
+    .history-time {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .history-detail {
+      font-size: 13px;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+
+    .history-hash {
+      display: block;
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #22d3ee;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .history-hash:hover {
+      text-decoration: underline;
+    }
+
+    .history-clear {
+      margin-top: auto;
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .history-clear:hover {
+      background: rgba(248, 113, 113, 0.18);
     }
 
     @media (max-width: 600px) {
@@ -588,11 +830,27 @@
       .duration-btn {
         width: 100%;
       }
+
+      .history-panel {
+        width: 100vw;
+        max-width: 100vw;
+      }
     }
   </style>
 </head>
 
 <body>
+
+  <button id="historyToggle" class="history-toggle">📜 History</button>
+
+  <div id="historyPanel" class="history-panel">
+    <div class="history-header">
+      <h3>Transaction History</h3>
+      <button id="historyClose" class="history-close">×</button>
+    </div>
+    <div id="historyList"></div>
+    <button id="historyClearBtn" class="history-clear hidden">Clear History</button>
+  </div>
 
   <div class="container">
 
@@ -725,7 +983,7 @@
         Protecting: 1.5 ETH · 20% drop · 7 days (based on your settings above)
       </div>
 
-      <label for="headlineSelect" style="display:block; margin-bottom:8px; font-weight:bold;">
+      <label for="headlineSelect" style="display:block; margin-bottom:8px; font-weight:bold; color:#cbd5e1;">
         Simulate a market event
       </label>
 
@@ -958,6 +1216,15 @@
         successSection.classList.remove("hidden");
         successSection.scrollIntoView({ behavior: "smooth" });
 
+        addHistoryEntry({
+          mode: "manual",
+          asset: document.getElementById("asset").textContent,
+          size: document.getElementById("size").textContent,
+          drop: document.getElementById("drop").textContent,
+          txHash: result.txHash,
+          basescanUrl: result.basescanUrl || `https://basescan.org/tx/${result.txHash}`
+        });
+
       } catch (error) {
         hideConfirmModal();
         showError(error.message);
@@ -988,8 +1255,6 @@
       guardianError.classList.add("hidden");
     }
 
-    // Guardian mode reads live from the form fields at the top of the page,
-    // instead of waiting for a parsed free-text intent.
     function getGuardianProfile() {
       return {
         asset: assetSelect.value || "ETH",
@@ -1053,8 +1318,9 @@
         guardianRisk.textContent = result.wouldTrigger
           ? "⚠️ High Risk — We'd protect you automatically"
           : "✅ Low Risk — No action needed";
-        guardianRisk.style.background = result.wouldTrigger ? "#fee4e2" : "#dcfce7";
-        guardianRisk.style.color = result.wouldTrigger ? "#b42318" : "#15803d";
+        guardianRisk.style.background = result.wouldTrigger ? "rgba(248,113,113,0.15)" : "rgba(74,222,128,0.15)";
+        guardianRisk.style.color = result.wouldTrigger ? "#fca5a5" : "#4ade80";
+        guardianRisk.style.border = result.wouldTrigger ? "1px solid rgba(248,113,113,0.35)" : "1px solid rgba(74,222,128,0.35)";
         guardianReasoning.textContent = result.reasoning;
 
         guardianResult.classList.remove("hidden");
@@ -1092,6 +1358,16 @@
         successSection.classList.remove("hidden");
         successSection.scrollIntoView({ behavior: "smooth" });
 
+        const profile = getGuardianProfile();
+        addHistoryEntry({
+          mode: "guardian",
+          asset: profile.asset,
+          size: `${profile.size} ${profile.asset}`,
+          drop: `${profile.dropPercent}% downside`,
+          txHash: result.trade.executed.txHash,
+          basescanUrl: result.trade.executed.basescanUrl
+        });
+
       } catch (error) {
         showGuardianError(error.message);
       } finally {
@@ -1099,6 +1375,81 @@
         guardianExecuteBtn.textContent = "Confirm & Execute Auto-Hedge";
       }
     });
+
+
+    // --- Transaction History Sidebar ---------------------------------------
+
+    const HISTORY_KEY = "hedgepilot_history";
+
+    const historyToggle = document.getElementById("historyToggle");
+    const historyPanel = document.getElementById("historyPanel");
+    const historyClose = document.getElementById("historyClose");
+    const historyList = document.getElementById("historyList");
+    const historyClearBtn = document.getElementById("historyClearBtn");
+
+    function loadHistory() {
+      try {
+        return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistory(entries) {
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+    }
+
+    function addHistoryEntry(entry) {
+      const entries = loadHistory();
+      entries.unshift({ ...entry, timestamp: new Date().toISOString() });
+      saveHistory(entries);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const entries = loadHistory();
+
+      if (entries.length === 0) {
+        historyList.innerHTML = '<p class="history-empty">No transactions yet.<br>Your executed hedges will appear here.</p>';
+        historyClearBtn.classList.add("hidden");
+        return;
+      }
+
+      historyClearBtn.classList.remove("hidden");
+
+      historyList.innerHTML = entries.map(entry => {
+        const date = new Date(entry.timestamp);
+        const timeStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) +
+          ' · ' + date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+        const shortHash = entry.txHash ? `${entry.txHash.slice(0, 10)}...${entry.txHash.slice(-6)}` : '';
+
+        return `
+          <div class="history-item">
+            <div class="history-item-top">
+              <span class="history-mode ${entry.mode}">${entry.mode === 'guardian' ? 'Guardian' : 'Manual'}</span>
+              <span class="history-time">${timeStr}</span>
+            </div>
+            <div class="history-detail">${entry.size} · ${entry.drop}</div>
+            <a class="history-hash" href="${entry.basescanUrl}" target="_blank">${shortHash} →</a>
+          </div>
+        `;
+      }).join("");
+    }
+
+    historyToggle.addEventListener("click", () => {
+      historyPanel.classList.toggle("open");
+    });
+    historyClose.addEventListener("click", () => {
+      historyPanel.classList.remove("open");
+    });
+    historyClearBtn.addEventListener("click", () => {
+      if (confirm("Clear all transaction history? This only clears the local display, not anything on-chain.")) {
+        saveHistory([]);
+        renderHistory();
+      }
+    });
+
+    renderHistory();
 
   </script>
 
