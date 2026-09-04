@@ -37,6 +37,7 @@ app.post('/api/parse-intent', async (req, res) => {
 // /api/execute-trade once the user confirms.
 // ---------------------------------------------------------------------------
 const pendingOrders = new Map(); // demo-only in-memory store; fine for a hackathon
+const executingOrders = new Set();
 
 app.post('/api/build-trade', async (req, res) => {
     try {
@@ -61,9 +62,6 @@ app.post('/api/build-trade', async (req, res) => {
         const spotPrice = await getSpotPrice(asset);
         const strike = computeStrike(spotPrice, numericDrop);
 
-        const matchedOrder = await findMatchingPutOrder({ asset, targetStrike: strike, expiryDays: numericExpiry });
-        const preview = await previewOrder(matchedOrder);
-
         const params = {
             asset,
             strike,
@@ -72,25 +70,35 @@ app.post('/api/build-trade', async (req, res) => {
             size: numericSize,
             spotPrice,
         };
-        const explanation = await explainTrade({
-            asset,
-            size: numericSize,
-            strike,
-            expiryDays: numericExpiry,
-            premium: preview.totalCollateralUsd, // correctly converted from 6-decimal USDC
-        });
+        // Finish the slower AI work before requesting a marketplace order.
+        // The demo always fills exactly 1 USDC through the configured
+        // OptionBook, so these are the same safety inputs previewOrder will
+        // return below. A market-maker signature often lasts only ~90 seconds.
+        const [explanation, safety] = await Promise.all([
+            explainTrade({
+                asset,
+                size: numericSize,
+                strike,
+                expiryDays: numericExpiry,
+                premium: 1,
+            }),
+            checkTransactionSafety(
+                userIntentText || '',
+                params,
+                {
+                    // The transaction actually calls the OptionBook contract, not the
+                    // order's maker address — that's what needs to be allow-listed.
+                    to: client.chainConfig.contracts.optionBook,
+                    approvalAmount: '1000000',
+                    tradeSize: '1000000',
+                }
+            ),
+        ]);
 
-        const safety = await checkTransactionSafety(
-            userIntentText || '',
-            params,
-            {
-                // The transaction actually calls the OptionBook contract, not the
-                // order's maker address — that's what needs to be allow-listed.
-                to: preview.optionBookAddress,
-                approvalAmount: preview.totalCollateral,
-                tradeSize: preview.fillAmountUsdc,
-            }
-        );
+        // Fetch and preview the short-lived signed order last. This preserves
+        // nearly its full validity window for the confirmation click.
+        const matchedOrder = await findMatchingPutOrder({ asset, targetStrike: strike, expiryDays: numericExpiry });
+        const preview = await previewOrder(matchedOrder);
 
         const orderId = `${matchedOrder.order.nonce}`;
         pendingOrders.set(orderId, matchedOrder);
@@ -109,21 +117,28 @@ app.post('/api/build-trade', async (req, res) => {
 // confirmation in the UI. Moves real (small) funds on Base mainnet.
 // ---------------------------------------------------------------------------
 app.post('/api/execute-trade', async (req, res) => {
+    let orderId;
     try {
-        const { orderId } = req.body;
+        ({ orderId } = req.body);
         const order = pendingOrders.get(orderId);
         if (!order) {
             return res.status(404).json({ error: 'Order not found or expired. Call /api/build-trade again.' });
         }
+        if (executingOrders.has(orderId)) {
+            return res.status(409).json({ error: 'This hedge is already being executed. Please wait.' });
+        }
 
-        // Consume the preview before execution so duplicate/concurrent requests
-        // cannot submit the same approved order twice.
-        pendingOrders.delete(orderId);
+        // Block duplicate concurrent submissions, but retain the preview if an
+        // RPC/order error occurs so the UI can show the error and safely retry.
+        executingOrders.add(orderId);
         const result = await executeOrder(order);
+        pendingOrders.delete(orderId);
         res.json(result);
     } catch (err) {
         console.error('execute-trade error:', err);
         res.status(500).json({ error: err.message });
+    } finally {
+        if (orderId) executingOrders.delete(orderId);
     }
 });
 

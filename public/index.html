@@ -1035,6 +1035,8 @@
         <p>You're about to execute a real transaction on Base. Please review the details before confirming.</p>
       </div>
 
+      <div id="modalError" class="error hidden"></div>
+
       <div class="modal-actions">
         <button id="cancelModal" class="secondary-btn">Cancel</button>
         <button id="confirmModalBtn" class="primary-btn">Confirm Hedge →</button>
@@ -1189,6 +1191,7 @@
     const closeModal = document.getElementById("closeModal");
     const cancelModal = document.getElementById("cancelModal");
     const confirmModalBtn = document.getElementById("confirmModalBtn");
+    const modalError = document.getElementById("modalError");
 
     executeBtn.addEventListener("click", () => {
       if (!currentOrderId) {
@@ -1200,6 +1203,8 @@
       const modalDays = Number(document.querySelector(".duration-btn.active")?.dataset.days || 1);
       document.getElementById("modalDuration").textContent = `${modalDays} ${modalDays === 1 ? "day" : "days"}`;
       document.getElementById("modalPremium").textContent = document.getElementById("premium").textContent;
+      modalError.textContent = "";
+      modalError.classList.add("hidden");
       setProgress(4);
       confirmModal.classList.remove("hidden");
     });
@@ -1210,6 +1215,8 @@
 
     confirmModalBtn.addEventListener("click", async () => {
       clearError();
+      modalError.textContent = "";
+      modalError.classList.add("hidden");
       confirmModalBtn.disabled = true;
       confirmModalBtn.textContent = "Executing...";
 
@@ -1238,10 +1245,10 @@
         });
 
       } catch (error) {
-        hideConfirmModal();
-        showError(error.message);
+        modalError.textContent = `Execution failed: ${error.message}`;
+        modalError.classList.remove("hidden");
         confirmModalBtn.disabled = false;
-        confirmModalBtn.textContent = "Confirm Hedge →";
+        confirmModalBtn.textContent = "Try Again →";
       }
     });
 

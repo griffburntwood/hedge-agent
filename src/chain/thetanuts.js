@@ -16,6 +16,9 @@ const UNDERLYING_TOKENS = {
 // a new user can buy protection.
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 const EXPIRY_TOLERANCE_SEC = 12 * 60 * 60;
+// Market-maker signatures are much shorter-lived than the option itself.
+// Leave enough time for the API response and the user's confirmation click.
+const MIN_ORDER_VALIDITY_SEC = 30;
 const PUBLIC_BASE_RPC_URL = 'https://mainnet.base.org';
 
 // Deliberately small, fixed fill size — matches the builder doc's explicit
@@ -100,9 +103,11 @@ export async function findMatchingPutOrder({ asset, targetStrike, expiryDays }) 
         const matchesAsset = o.order?.underlyingToken?.toLowerCase() === underlyingToken.toLowerCase();
         const expirySec = Number(o.order?.expiry ?? 0);
         const expiryOk = expirySec > nowSec && Math.abs(expirySec - targetExpirySec) <= EXPIRY_TOLERANCE_SEC;
+        const orderValidUntil = Number(o.rawApiData?.orderExpiryTimestamp ?? 0);
+        const signatureHasTime = orderValidUntil > nowSec + MIN_ORDER_VALIDITY_SEC;
         const usesNativeUsdc = o.order?.collateralToken?.toLowerCase() === BASE_USDC.toLowerCase();
         const hasLiquidity = BigInt(o.availableAmount ?? '0') > 0n;
-        return isPut && matchesAsset && expiryOk && usesNativeUsdc && hasLiquidity;
+        return isPut && matchesAsset && expiryOk && signatureHasTime && usesNativeUsdc && hasLiquidity;
     });
 
     if (candidates.length === 0) {
@@ -166,6 +171,15 @@ export async function previewOrder(order) {
  */
 export async function executeOrder(order) {
     const client = signerClient();
+
+    // Check the short-lived marketplace signature before allowance or any
+    // other write. The SDK also validates this at fill time, but doing it here
+    // prevents paying approval gas for a quote that has already expired.
+    const orderValidUntil = Number(order.rawApiData?.orderExpiryTimestamp ?? 0);
+    const nowSec = Math.floor(Date.now() / 1000);
+    if (orderValidUntil <= nowSec + 10) {
+        throw new Error('The live marketplace quote expired before confirmation. Generate a fresh quote and confirm it promptly.');
+    }
 
     const preview = await client.optionBook.previewFillOrder(order, DEMO_FILL_AMOUNT_USDC);
     const [collateralBalance, collateralSymbol, collateralDecimals] = await Promise.all([
