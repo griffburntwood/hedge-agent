@@ -16,6 +16,7 @@ const UNDERLYING_TOKENS = {
 // a new user can buy protection.
 const BASE_USDC = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 const EXPIRY_TOLERANCE_SEC = 12 * 60 * 60;
+const PUBLIC_BASE_RPC_URL = 'https://mainnet.base.org';
 
 // Deliberately small, fixed fill size — matches the builder doc's explicit
 // guidance ("trade small... a 1 USDC fill scores exactly the same as a 100
@@ -23,10 +24,43 @@ const EXPIRY_TOLERANCE_SEC = 12 * 60 * 60;
 // notional; that's a demo-safety choice, not a limitation to fix later.
 const DEMO_FILL_AMOUNT_USDC = 1_000000n; // 1 USDC (6 decimals)
 
-const readProvider = () => new ethers.JsonRpcProvider(process.env.THETANUTS_RPC_URL);
+const readProvider = (rpcUrl = process.env.THETANUTS_RPC_URL) => {
+    if (!rpcUrl) throw new Error('THETANUTS_RPC_URL is not set. Add a Base mainnet RPC URL to your .env file.');
+    return new ethers.JsonRpcProvider(rpcUrl);
+};
 
-function readOnlyClient() {
-    return new ThetanutsClient({ chainId: 8453, provider: readProvider() });
+function readOnlyClient(rpcUrl) {
+    return new ThetanutsClient({ chainId: 8453, provider: readProvider(rpcUrl) });
+}
+
+function isTemporaryNetworkError(error) {
+    const code = error?.code || error?.cause?.code;
+    const message = `${error?.message || ''} ${error?.cause?.message || ''}`;
+    return ['ECONNRESET', 'ETIMEDOUT', 'ECONNREFUSED', 'NETWORK_ERROR', 'SERVER_ERROR'].includes(code)
+        || /socket|network|timeout|TLS connection|failed to fetch/i.test(message);
+}
+
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function withReadRpcRetry(operation) {
+    const rpcUrls = [...new Set([process.env.THETANUTS_RPC_URL, PUBLIC_BASE_RPC_URL].filter(Boolean))];
+    let lastError;
+    for (const rpcUrl of rpcUrls) {
+        const attempts = rpcUrl === process.env.THETANUTS_RPC_URL ? 2 : 1;
+        for (let attempt = 1; attempt <= attempts; attempt += 1) {
+            try {
+                return await operation(readOnlyClient(rpcUrl));
+            } catch (error) {
+                lastError = error;
+                if (!isTemporaryNetworkError(error)) throw error;
+                if (attempt < attempts) await delay(400 * attempt);
+            }
+        }
+    }
+    throw new Error(
+        `Base RPC is temporarily unavailable after retrying. Check your internet/RPC provider and try again. (${lastError?.cause?.code || lastError?.code || 'network error'})`,
+        { cause: lastError }
+    );
 }
 
 function signerClient() {
@@ -97,32 +131,33 @@ export async function findMatchingPutOrder({ asset, targetStrike, expiryDays }) 
  * Always call this before previewOrExecute('execute', ...).
  */
 export async function previewOrder(order) {
-    const client = readOnlyClient();
-    const preview = await client.optionBook.previewFillOrder(order, DEMO_FILL_AMOUNT_USDC);
-    const totalCollateralRaw = preview.totalCollateral?.toString?.() ?? preview.totalCollateral;
-    const [collateralSymbol, collateralDecimals] = await Promise.all([
-        client.erc20.getSymbol(preview.collateralToken),
-        client.erc20.getDecimals(preview.collateralToken),
-    ]);
-    return {
-        numContracts: preview.numContracts?.toString?.() ?? preview.numContracts,
-        totalCollateral: totalCollateralRaw,
-        // USDC has 6 decimals — convert the raw integer to a human dollar amount
-        // for anything shown to the user (explanations, UI). Keep the raw value
-        // above for anything that talks to the chain.
-        totalCollateralUsd: Number(totalCollateralRaw) / 1e6,
-        totalCollateralFormatted: ethers.formatUnits(totalCollateralRaw, collateralDecimals),
-        collateralToken: preview.collateralToken,
-        collateralSymbol,
-        // Some SDK/provider versions return ERC-20 decimals as a bigint.
-        // Express' JSON serializer cannot encode bigint values, so normalize
-        // this display-only metadata before returning the preview to the UI.
-        collateralDecimals: Number(collateralDecimals),
-        expiryTimestamp: Number(order.order.expiry),
-        expiryIso: new Date(Number(order.order.expiry) * 1000).toISOString(),
-        optionBookAddress: order.rawApiData?.optionBookAddress,
-        fillAmountUsdc: DEMO_FILL_AMOUNT_USDC.toString(),
-    };
+    return withReadRpcRetry(async (client) => {
+        const preview = await client.optionBook.previewFillOrder(order, DEMO_FILL_AMOUNT_USDC);
+        const totalCollateralRaw = preview.totalCollateral?.toString?.() ?? preview.totalCollateral;
+        const [collateralSymbol, collateralDecimals] = await Promise.all([
+            client.erc20.getSymbol(preview.collateralToken),
+            client.erc20.getDecimals(preview.collateralToken),
+        ]);
+        return {
+            numContracts: preview.numContracts?.toString?.() ?? preview.numContracts,
+            totalCollateral: totalCollateralRaw,
+            // USDC has 6 decimals — convert the raw integer to a human dollar amount
+            // for anything shown to the user (explanations, UI). Keep the raw value
+            // above for anything that talks to the chain.
+            totalCollateralUsd: Number(totalCollateralRaw) / 1e6,
+            totalCollateralFormatted: ethers.formatUnits(totalCollateralRaw, collateralDecimals),
+            collateralToken: preview.collateralToken,
+            collateralSymbol,
+            // Some SDK/provider versions return ERC-20 decimals as a bigint.
+            // Express' JSON serializer cannot encode bigint values, so normalize
+            // this display-only metadata before returning the preview to the UI.
+            collateralDecimals: Number(collateralDecimals),
+            expiryTimestamp: Number(order.order.expiry),
+            expiryIso: new Date(Number(order.order.expiry) * 1000).toISOString(),
+            optionBookAddress: order.rawApiData?.optionBookAddress,
+            fillAmountUsdc: DEMO_FILL_AMOUNT_USDC.toString(),
+        };
+    });
 }
 
 /**
