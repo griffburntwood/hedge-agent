@@ -89,6 +89,10 @@ export async function previewOrder(order) {
     const client = readOnlyClient();
     const preview = await client.optionBook.previewFillOrder(order, DEMO_FILL_AMOUNT_USDC);
     const totalCollateralRaw = preview.totalCollateral?.toString?.() ?? preview.totalCollateral;
+    const [collateralSymbol, collateralDecimals] = await Promise.all([
+        client.erc20.getSymbol(preview.collateralToken),
+        client.erc20.getDecimals(preview.collateralToken),
+    ]);
     return {
         numContracts: preview.numContracts?.toString?.() ?? preview.numContracts,
         totalCollateral: totalCollateralRaw,
@@ -96,7 +100,10 @@ export async function previewOrder(order) {
         // for anything shown to the user (explanations, UI). Keep the raw value
         // above for anything that talks to the chain.
         totalCollateralUsd: Number(totalCollateralRaw) / 1e6,
+        totalCollateralFormatted: ethers.formatUnits(totalCollateralRaw, collateralDecimals),
         collateralToken: preview.collateralToken,
+        collateralSymbol,
+        collateralDecimals,
         optionBookAddress: order.rawApiData?.optionBookAddress,
         fillAmountUsdc: DEMO_FILL_AMOUNT_USDC.toString(),
     };
@@ -110,6 +117,19 @@ export async function executeOrder(order) {
     const client = signerClient();
 
     const preview = await client.optionBook.previewFillOrder(order, DEMO_FILL_AMOUNT_USDC);
+    const [collateralBalance, collateralSymbol, collateralDecimals] = await Promise.all([
+        client.erc20.getBalance(preview.collateralToken),
+        client.erc20.getSymbol(preview.collateralToken),
+        client.erc20.getDecimals(preview.collateralToken),
+    ]);
+
+    if (collateralBalance < preview.totalCollateral) {
+        const required = ethers.formatUnits(preview.totalCollateral, collateralDecimals);
+        const available = ethers.formatUnits(collateralBalance, collateralDecimals);
+        throw new Error(
+            `Insufficient ${collateralSymbol} balance: this trade requires ${required}, but the wallet has ${available}.`
+        );
+    }
 
     // Approve exact amount only — never MaxUint256, per the builder doc's
     // trading safety rules.

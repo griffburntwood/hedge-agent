@@ -32,6 +32,7 @@ HedgePilot removes that barrier: the user describes their goal in plain language
 |---|---|---|
 | Thetanuts OptionBook | `0x1bDff855d6811728acaDC00989e79143a2bdfDed` | Base Mainnet |
 | USDC (collateral token) | `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` | Base Mainnet |
+| aBasUSDC (Aave Base USDC collateral) | `0x4e65fE4DbA92790696d040ac24Aa414708F5c0AB` | Base Mainnet |
 | WETH (underlying, ETH options) | `0x4200000000000000000000000000000000000006` | Base Mainnet |
 
 ## Setup and Installation

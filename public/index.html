@@ -967,6 +967,8 @@
         <div class="trade-item"><span>Duration</span><strong id="expiry"></strong></div>
         <div class="trade-item"><span>You're protected below</span><strong id="strike"></strong></div>
         <div class="trade-item"><span>Cost of protection</span><strong id="premium"></strong></div>
+        <div class="trade-item"><span>Required collateral</span><strong id="collateralSymbol"></strong></div>
+        <div class="trade-item"><span>Collateral contract</span><strong id="collateralAddress"></strong></div>
       </div>
 
       <button id="executeBtn" disabled>Confirm & Execute</button>
@@ -1159,6 +1161,9 @@
         document.getElementById("visualDrop").textContent = `${dropPercent}%`;
 
         document.getElementById("premium").textContent = `$${trade.preview?.totalCollateralUsd || "—"}`;
+        document.getElementById("collateralSymbol").textContent =
+          `${trade.preview?.totalCollateralFormatted || "—"} ${trade.preview?.collateralSymbol || ""}`.trim();
+        document.getElementById("collateralAddress").textContent = trade.preview?.collateralToken || "—";
 
         quoteSection.classList.remove("hidden");
         executeBtn.disabled = false;
